@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alif - Futuristic Portfolio</title>
+  <link rel="icon" type="image/png" href="dist/img/16x16.png" sizes="16x16" />
+  
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        container: {
+          center: true,
+          padding: '16px',
+        },
+        extend: {
+          fontFamily: {
+            sans: ['Space Grotesk', 'sans-serif'],
+          },
+          colors: {
+            primary: '#0ea5e9', // Cyan 500
+            secondary: '#8b5cf6', // Violet 500
+            darkbg: '#020617', // Slate 950
+            glass: 'rgba(255, 255, 255, 0.03)',
+            glassborder: 'rgba(255, 255, 255, 0.08)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts: Space Grotesk -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      background-color: #020617;
+      color: #cbd5e1;
+      font-family: 'Space Grotesk', sans-serif;
+      overflow-x: hidden;
+    }
+    
+    /* Futuristic scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #020617;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #0ea5e9;
+      border-radius: 4px;
+    }
+    
+    /* Glowing Gradients */
+    .text-glow {
+      text-shadow: 0 0 20px rgba(14, 165, 233, 0.5);
+    }
+    .box-glow {
+      box-shadow: 0 0 30px rgba(14, 165, 233, 0.15);
+    }
+    
+    /* Glassmorphism utility */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 1rem;
+      transition: all 0.3s ease;
+    }
+    .glass-card:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(14, 165, 233, 0.4);
+      box-shadow: 0 0 20px rgba(14, 165, 233, 0.2);
+      transform: translateY(-5px);
+    }
+  </style>
+</head>
+
+<body class="bg-darkbg text-slate-300 antialiased selection:bg-primary selection:text-white relative">
+  <!-- Glowing Background Orbs -->
+  <div class="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-primary/20 blur-[120px] pointer-events-none z-0"></div>
+  <div class="fixed bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-secondary/20 blur-[120px] pointer-events-none z-0"></div>
+
+  <!-- Header Start -->
+  <header class="fixed top-0 left-0 z-50 flex w-full items-center backdrop-blur-md bg-darkbg/70 border-b border-glassborder transition-all duration-300">
+    <div class="container relative z-50">
+      <div class="flex items-center justify-between py-4">
+        <div class="px-4">
+          <a href="#home" class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary tracking-widest uppercase">AFW.SYS</a>
+        </div>
+        <div class="flex items-center px-4">
+          <button id="hamburger" name="hamburger" type="button" class="block lg:hidden text-white focus:outline-none">
+            <i class="fa-solid fa-bars text-2xl"></i>
+          </button>
+          <nav id="nav-menu" class="absolute right-4 top-full hidden w-full max-w-[250px] rounded-lg glass-card py-5 shadow-lg lg:static lg:block lg:max-w-full lg:rounded-none lg:bg-transparent lg:shadow-none lg:border-none lg:backdrop-filter-none">
+            <ul class="block lg:flex lg:items-center">
+              <li class="group"><a href="#home" class="mx-6 flex py-2 text-sm uppercase tracking-wider text-slate-300 group-hover:text-primary transition-colors">Home</a></li>
+              <li class="group"><a href="#about" class="mx-6 flex py-2 text-sm uppercase tracking-wider text-slate-300 group-hover:text-primary transition-colors">Data</a></li>
+              <li class="group"><a href="#portfolio" class="mx-6 flex py-2 text-sm uppercase tracking-wider text-slate-300 group-hover:text-primary transition-colors">Projects</a></li>
+              <li class="group"><a href="#clients" class="mx-6 flex py-2 text-sm uppercase tracking-wider text-slate-300 group-hover:text-primary transition-colors">Tech</a></li>
+              <li class="group"><a href="#blog" class="mx-6 flex py-2 text-sm uppercase tracking-wider text-slate-300 group-hover:text-primary transition-colors">Network</a></li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </header>
+  <!-- Header End -->
+
+  <!-- Hero Section Start -->
+  <section id="home" class="pt-36 pb-20 relative z-10 min-h-screen flex items-center">
+    <div class="container">
+      <div class="flex flex-wrap items-center">
+        <div class="w-full px-4 lg:w-1/2">
+          <div class="inline-block px-4 py-1.5 mb-6 rounded-full border border-primary/30 bg-primary/10 text-primary text-sm font-semibold tracking-widest uppercase">System Online // Hello World</div>
+          <h1 class="text-3xl font-semibold text-slate-200 md:text-5xl mb-2">I'm <span class="block mt-2 text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-blue-400 to-secondary text-glow lg:text-7xl">Alif Fadhil W.</span></h1>
+          <h2 class="mb-6 text-xl font-medium text-slate-400 lg:text-3xl mt-4">Software Engineer <span class="text-primary">|</span> FrontEnd Web</h2>
+          <p class="mb-10 font-light leading-relaxed text-slate-400 max-w-lg border-l-2 border-primary/50 pl-4">
+            Executing creative solutions from Semarang City, Indonesia. Building futuristic, high-performance web interfaces.
+          </p>
+          <div class="flex space-x-4">
+            <a href="#about" class="relative overflow-hidden rounded-md bg-gradient-to-r from-primary to-secondary px-8 py-3 text-base font-bold text-white transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(14,165,233,0.5)]">
+              Initialize
+            </a>
+            <a href="https://github.com/Alfdhiw" target="_blank" class="rounded-md border border-slate-600 bg-glass px-8 py-3 text-base font-bold text-white transition-all hover:border-primary hover:text-primary">
+              <i class="fa-brands fa-github mr-2"></i> Source
+            </a>
+          </div>
+        </div>
+        <div class="w-full px-4 lg:w-1/2 mt-16 lg:mt-0 relative">
+          <div class="relative mx-auto w-full max-w-[400px]">
+            <!-- Futuristic image container -->
+            <div class="absolute inset-0 bg-gradient-to-tr from-primary to-secondary rounded-[2rem] rotate-6 opacity-30 blur-xl animate-pulse"></div>
+            <div class="relative glass-card p-2 rounded-[2rem] z-10">
+              <img src="dist/img/a.png" alt="Alif" class="w-full h-auto rounded-[1.5rem] filter contrast-125" />
+            </div>
+            <!-- Decorative tech elements -->
+            <div class="absolute -top-6 -left-6 w-12 h-12 border-t-2 border-l-2 border-primary"></div>
+            <div class="absolute -bottom-6 -right-6 w-12 h-12 border-b-2 border-r-2 border-secondary"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Hero Section End -->
+
+  <!-- About Section Start -->
+  <section id="about" class="pt-24 pb-20 relative z-10">
+    <div class="container">
+      <div class="flex flex-wrap items-center">
+        <div class="mb-10 w-full px-4 lg:w-1/2">
+          <h4 class="mb-3 text-sm font-bold uppercase tracking-widest text-primary">>> Data_Profile</h4>
+          <h2 class="mb-6 max-w-md text-3xl font-bold text-white lg:text-4xl">System Information <span class="text-primary animate-pulse">_</span></h2>
+          <div class="glass-card p-8">
+            <p class="mb-4 text-base font-light text-slate-300 lg:text-lg">
+              <span class="text-primary">> </span>I am Alif, graduated from Informatics Engineering, Dian Nuswantoro University. I am deeply interested in Web Development.
+            </p>
+            <p class="mb-4 text-base font-light text-slate-300 lg:text-lg">
+              <span class="text-primary">> </span>I fell in love with programming and I have constantly evolved my stack to build efficient, modern applications.
+            </p>
+            <p class="text-base font-light text-slate-300 lg:text-lg">
+              <span class="text-primary">> </span>I have participated in internship programs and organizations focusing on Web Development, Data Mining, and API Services for over 2 years.
+            </p>
+          </div>
+        </div>
+        <div class="w-full px-4 lg:w-1/2 lg:pl-16">
+          <h3 class="mb-6 text-2xl font-semibold text-white lg:text-3xl">Establish Connection</h3>
+          <p class="mb-8 text-base font-light text-slate-400">
+            Open ports for communication. Connect through the secure channels below.
+          </p>
+          <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <a href="https://instagram.com/alfdhiw_" target="_blank" class="glass-card flex h-16 items-center justify-center text-slate-400 hover:text-white group">
+              <i class="fa-brands fa-instagram fa-xl group-hover:scale-125 transition-transform group-hover:text-pink-500"></i>
+            </a>
+            <a href="https://twitter.com/alfdhiw" target="_blank" class="glass-card flex h-16 items-center justify-center text-slate-400 hover:text-white group">
+              <i class="fa-brands fa-twitter fa-xl group-hover:scale-125 transition-transform group-hover:text-blue-400"></i>
+            </a>
+            <a href="https://www.linkedin.com/in/alif-fadhil-wibowo" target="_blank" class="glass-card flex h-16 items-center justify-center text-slate-400 hover:text-white group">
+              <i class="fa-brands fa-linkedin-in fa-xl group-hover:scale-125 transition-transform group-hover:text-blue-600"></i>
+            </a>
+            <a href="https://github.com/Alfdhiw" target="_blank" class="glass-card flex h-16 items-center justify-center text-slate-400 hover:text-white group">
+              <i class="fa-brands fa-github fa-xl group-hover:scale-125 transition-transform group-hover:text-white"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- About Section End -->
+
+  <!-- Tech Stack Section Start -->
+  <section id="clients" class="pt-24 pb-20 relative z-10 border-y border-glassborder bg-white/[0.01]">
+    <div class="container">
+      <div class="w-full px-4">
+        <div class="mx-auto mb-12 text-center">
+          <h4 class="mb-2 text-sm font-bold uppercase tracking-widest text-primary">>> Core_Modules</h4>
+          <h2 class="mb-4 text-3xl font-bold text-white sm:text-4xl">Tech Stack</h2>
+          <p class="text-base font-light text-slate-400">Compiled languages and frameworks initialized in memory.</p>
+        </div>
+      </div>
+      <div class="w-full px-4">
+        <div class="flex flex-wrap items-center justify-center gap-8">
+          <div class="glass-card w-28 h-28 flex items-center justify-center opacity-70 hover:opacity-100 hover:border-primary">
+            <img src="dist/img/languages/java.png" alt="Java" class="w-16 h-16 object-contain" />
+          </div>
+          <div class="glass-card w-28 h-28 flex items-center justify-center opacity-70 hover:opacity-100 hover:border-primary">
+            <img src="dist/img/languages/php.svg" alt="PHP" class="w-16 h-16 object-contain filter brightness-150" />
+          </div>
+          <div class="glass-card w-28 h-28 flex items-center justify-center opacity-70 hover:opacity-100 hover:border-primary">
+            <img src="dist/img/languages/C++.png" alt="C++" class="w-16 h-16 object-contain" />
+          </div>
+          <div class="glass-card w-28 h-28 flex items-center justify-center opacity-70 hover:opacity-100 hover:border-primary">
+            <img src="dist/img/languages/pyton.png" alt="Python" class="w-16 h-16 object-contain" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Tech Stack End -->
+
+  <!-- Portfolio Section Start -->
+  <section id="portfolio" class="pt-24 pb-20 relative z-10">
+    <div class="container">
+      <div class="w-full px-4">
+        <div class="mx-auto mb-16 max-w-xl text-center">
+          <h4 class="mb-2 text-sm font-bold uppercase tracking-widest text-primary">>> Output_Log</h4>
+          <h2 class="mb-4 text-3xl font-bold text-white sm:text-4xl">System Projects</h2>
+          <p class="text-base font-light text-slate-400">
+            Deployed applications and technical documentation developed during my academic and professional timeline.
+          </p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap justify-center -mx-4">
+        <!-- Project Item -->
+        <div class="w-full px-4 md:w-1/2 lg:w-1/3 mb-10">
+          <div class="glass-card h-full p-4 flex flex-col">
+            <div class="overflow-hidden rounded-lg border border-glassborder relative group">
+              <div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity z-10"></div>
+              <img src="dist/img/portfolio/matsuri2.png" alt="Landing Page" class="w-full h-48 object-cover transform group-hover:scale-110 transition-transform duration-500" />
+            </div>
+            <h3 class="mt-5 mb-2 text-xl font-bold text-white">Matsuri Castle</h3>
+            <p class="text-sm font-light text-slate-400 flex-grow">Website for matsuri castle restaurant that serves a typical Japanese feel.</p>
+          </div>
+        </div>
+        <!-- Project Item -->
+        <div class="w-full px-4 md:w-1/2 lg:w-1/3 mb-10">
+          <div class="glass-card h-full p-4 flex flex-col">
+            <div class="overflow-hidden rounded-lg border border-glassborder relative group">
+              <div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity z-10"></div>
+              <img src="dist/img/portfolio/tokopojok2.png" alt="E-Commerce" class="w-full h-48 object-cover transform group-hover:scale-110 transition-transform duration-500" />
+            </div>
+            <h3 class="mt-5 mb-2 text-xl font-bold text-white">Toko Pojok</h3>
+            <p class="text-sm font-light text-slate-400 flex-grow">E-commerce website displaying a variety of basic food needs.</p>
+          </div>
+        </div>
+        <!-- Project Item -->
+        <div class="w-full px-4 md:w-1/2 lg:w-1/3 mb-10">
+          <div class="glass-card h-full p-4 flex flex-col">
+            <div class="overflow-hidden rounded-lg border border-glassborder relative group">
+              <div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity z-10"></div>
+              <img src="dist/img/portfolio/store2.png" alt="EStore" class="w-full h-48 object-cover transform group-hover:scale-110 transition-transform duration-500" />
+            </div>
+            <h3 class="mt-5 mb-2 text-xl font-bold text-white">E-Store</h3>
+            <p class="text-sm font-light text-slate-400 flex-grow">E-commerce containing the latest fashion products.</p>
+          </div>
+        </div>
+        <!-- Project Item -->
+        <div class="w-full px-4 md:w-1/2 lg:w-1/3 mb-10">
+          <div class="glass-card h-full p-4 flex flex-col">
+            <div class="overflow-hidden rounded-lg border border-glassborder relative group">
+              <div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity z-10"></div>
+              <img src="dist/img/portfolio/pasariwak.PNG" alt="Pasar Iwak" class="w-full h-48 object-cover transform group-hover:scale-110 transition-transform duration-500" />
+            </div>
+            <h3 class="mt-5 mb-2 text-xl font-bold text-white">Pasar Iwak</h3>
+            <p class="text-sm font-light text-slate-400 flex-grow">Platform for buying and selling freshwater fish, especially for the people of Kendal.</p>
+          </div>
+        </div>
+        <!-- Project Item -->
+        <div class="w-full px-4 md:w-1/2 lg:w-1/3 mb-10">
+          <div class="glass-card h-full p-4 flex flex-col">
+            <div class="overflow-hidden rounded-lg border border-glassborder relative group">
+              <div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity z-10"></div>
+              <img src="dist/img/portfolio/simone.PNG" alt="Simone" class="w-full h-48 object-cover transform group-hover:scale-110 transition-transform duration-500" />
+            </div>
+            <h3 class="mt-5 mb-2 text-xl font-bold text-white">Simone (Internship System)</h3>
+            <p class="text-sm font-light text-slate-400 flex-grow">Web-based online internship registration at the Semarang District Court.</p>
+          </div>
+        </div>
+        <!-- Project Item -->
+        <div class="w-full px-4 md:w-1/2 lg:w-1/3 mb-10">
+          <div class="glass-card h-full p-4 flex flex-col">
+            <div class="overflow-hidden rounded-lg border border-glassborder relative group">
+              <div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity z-10"></div>
+              <img src="dist/img/portfolio/siculi.PNG" alt="Siculi" class="w-full h-48 object-cover transform group-hover:scale-110 transition-transform duration-500" />
+            </div>
+            <h3 class="mt-5 mb-2 text-xl font-bold text-white">Siculi (Leave System)</h3>
+            <p class="text-sm font-light text-slate-400 flex-grow">Web-based online leave application website at Semarang District Court.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Portfolio Section End -->
+
+  <!-- Live Blog Section Start -->
+  <section id="blog" class="pt-24 pb-20 relative z-10 bg-white/[0.02]">
+    <div class="container">
+      <div class="w-full px-4">
+        <div class="mx-auto mb-16 max-w-xl text-center">
+          <h4 class="mb-2 text-sm font-bold uppercase tracking-widest text-secondary">>> Network_Nodes</h4>
+          <h2 class="mb-4 text-3xl font-bold text-white sm:text-4xl">Live Deployments</h2>
+          <p class="text-base font-light text-slate-400">Live preview links to hosted instances of the web applications.</p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap -mx-4">
+        <!-- Live Item -->
+        <div class="w-full px-4 lg:w-1/2 xl:w-1/3 mb-8">
+          <div class="glass-card p-6 h-full border-l-4 border-l-primary flex flex-col">
+            <h3 class="mb-2 text-xl font-bold text-white">Matsuri Castle Restaurant</h3>
+            <p class="mb-6 text-sm font-light text-slate-400 flex-grow">Japanese cuisine restaurant landing page.</p>
+            <a href="https://alfdhiw.github.io/Web-MatsuriCastle/" target="_blank" class="inline-flex items-center text-sm font-bold text-primary hover:text-white transition-colors">
+              Access Node <i class="fa-solid fa-arrow-up-right-from-square ml-2"></i>
+            </a>
+          </div>
+        </div>
+        <!-- Live Item -->
+        <div class="w-full px-4 lg:w-1/2 xl:w-1/3 mb-8">
+          <div class="glass-card p-6 h-full border-l-4 border-l-primary flex flex-col">
+            <h3 class="mb-2 text-xl font-bold text-white">Pasar Iwak</h3>
+            <p class="mb-6 text-sm font-light text-slate-400 flex-grow">Marketplace platform for fish farmers.</p>
+            <a href="https://pasariwak.com/demo/market/" target="_blank" class="inline-flex items-center text-sm font-bold text-primary hover:text-white transition-colors">
+              Access Node <i class="fa-solid fa-arrow-up-right-from-square ml-2"></i>
+            </a>
+          </div>
+        </div>
+        <!-- Live Item -->
+        <div class="w-full px-4 lg:w-1/2 xl:w-1/3 mb-8">
+          <div class="glass-card p-6 h-full border-l-4 border-l-primary flex flex-col">
+            <h3 class="mb-2 text-xl font-bold text-white">E-Store</h3>
+            <p class="mb-6 text-sm font-light text-slate-400 flex-grow">Fashion e-commerce storefront.</p>
+            <a href="https://alfdhiw.github.io/E-Store/" target="_blank" class="inline-flex items-center text-sm font-bold text-primary hover:text-white transition-colors">
+              Access Node <i class="fa-solid fa-arrow-up-right-from-square ml-2"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Live Blog End -->
+
+  <!-- Footer Start -->
+  <footer class="pt-24 pb-12 relative z-10 border-t border-glassborder">
+    <div class="container text-center">
+      <div class="mb-8 flex justify-center space-x-6">
+        <a href="https://github.com/Alfdhiw" target="_blank" class="text-slate-400 hover:text-primary transition-colors">
+          <i class="fa-brands fa-github fa-2x"></i>
+        </a>
+        <a href="https://www.linkedin.com/in/alif-fadhil-wibowo" target="_blank" class="text-slate-400 hover:text-primary transition-colors">
+          <i class="fa-brands fa-linkedin fa-2x"></i>
+        </a>
+        <a href="https://twitter.com/alfdhiw" target="_blank" class="text-slate-400 hover:text-primary transition-colors">
+          <i class="fa-brands fa-twitter fa-2x"></i>
+        </a>
+      </div>
+      <p class="text-sm font-light text-slate-500 mb-2">
+        Engineered with <span class="text-secondary">&lt;3</span> by <a href="https://github.com/Alfdhiw" target="_blank" class="font-bold text-primary hover:underline">Alif</a>. Powered by Tailwind CDN.
+      </p>
+      <p class="text-xs text-slate-600 font-mono">
+        SYS.VER 4.1 // 2026 // END_OF_FILE
+      </p>
+    </div>
+  </footer>
+  <!-- Footer End -->
+
+  <!-- Back to top -->
+  <a href="#home" class="fixed bottom-6 right-6 z-[9999] h-12 w-12 flex items-center justify-center rounded-full glass-card hover:bg-primary/20 hover:border-primary text-primary transition-all opacity-80 hover:opacity-100 backdrop-blur-lg border border-glassborder" id="to-top">
+    <i class="fa-solid fa-chevron-up"></i>
+  </a>
+
+  <!-- Minimal JS for functionality (no heavy libraries required if simple) -->
+  <script>
+    // Hamburger Menu Logic
+    const hamburger = document.querySelector('#hamburger');
+    const navMenu = document.querySelector('#nav-menu');
+    hamburger.addEventListener('click', function () {
+      navMenu.classList.toggle('hidden');
+    });
+
+    // Smooth Scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        navMenu.classList.add('hidden'); // Close mobile menu on click
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+          behavior: 'smooth'
+        });
+      });
+    });
+
+    // Navbar blur effect on scroll
+    window.addEventListener('scroll', function() {
+      const header = document.querySelector('header');
+      const toTop = document.querySelector('#to-top');
+      if (window.scrollY > 50) {
+        header.classList.add('bg-darkbg/90', 'shadow-[0_4px_30px_rgba(0,0,0,0.1)]');
+        toTop.style.display = 'flex';
+      } else {
+        header.classList.remove('bg-darkbg/90', 'shadow-[0_4px_30px_rgba(0,0,0,0.1)]');
+        toTop.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
