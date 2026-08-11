@@ -1,0 +1,18 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="logo-gradient" x1="10" y1="7" x2="55" y2="58" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#60A5FA"/>
+      <stop offset="0.5" stop-color="#2563EB"/>
+      <stop offset="1" stop-color="#173E89"/>
+    </linearGradient>
+    <filter id="logo-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <path d="M32 3.8L56.4 17.9V46.1L32 60.2L7.6 46.1V17.9L32 3.8Z" fill="#0D1A35" stroke="url(#logo-gradient)" stroke-width="2"/>
+  <path d="M32 8.5L51.8 19.9V42.8L32 54.2L12.2 42.8V19.9L32 8.5Z" fill="url(#logo-gradient)" opacity=".25"/>
+  <path d="M18.5 42.8L28.1 19.8H35.3L45.5 42.8H38.7L36.6 37.6H27.1L25 42.8H18.5ZM29.4 31.9H34.3L31.8 25.3L29.4 31.9Z" fill="#EAF4FF"/>
+  <path d="M39.4 20H48.2V25.2H39.4V29.6H46.5V34.6H39.4V42.8H33.2V20H39.4Z" fill="#EAF4FF" filter="url(#logo-glow)"/>
+  <circle cx="48.5" cy="16.8" r="2.7" fill="#60A5FA"/>
+</svg>
