@@ -1,0 +1,13 @@
+{
+  "name": "alif-portfolio",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node --check dist/js/main.js && node --check dist/js/collaboration.js && node --check scripts/templates.mjs && node --check scripts/build.mjs && node --check scripts/serve.mjs",
+    "test": "node --test tests/portfolio.test.mjs tests/collaboration.test.mjs",
+    "serve": "node scripts/serve.mjs",
+    "test:browser": "node --experimental-websocket tests/browser-audit.mjs"
+  },
+  "engines": { "node": ">=20.10" }
+}

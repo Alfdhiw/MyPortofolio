@@ -1,0 +1,246 @@
+{
+  "profile": {
+    "fullName": "Alif Fadhil",
+    "outlinePart": "Alif",
+    "solidPart": "Fadhil Wibowo",
+    "role": "Full Stack Developer",
+    "location": "Semarang, Indonesia",
+    "shortBio": "I design and develop thoughtful web products. Clear interfaces, practical systems, and a little attention to the details that matter.",
+    "about": "An Informatics Engineering graduate from Dian Nuswantoro University, bringing together clean interfaces, application logic, and structured data.",
+    "portrait": { "src": "dist/img/ChatGPT Image Aug 11, 2026, 06_59_37 PM.png", "alt": "Portrait of Alif Fadhil Wibowo" },
+    "portraitCutout": { "src": "dist/img/alif-portrait-cutout.png", "alt": "Alif Fadhil Wibowo, full stack developer" },
+    "availableForWork": true,
+    "availabilityLabel": "Available for New Project",
+    "email": "wibowalif22@gmail.com",
+    "experienceYears": 3,
+    "stats": { "projectsCompleted": 10, "satisfiedClients": 12, "codingHours": 8760 },
+    "skills": ["HTML", "CSS", "JavaScript", "PHP", "Laravel", "MySQL", "Git", "Java", "Python"],
+    "socialLinks": [
+      { "label": "GitHub", "url": "https://github.com/Alfdhiw" },
+      { "label": "Instagram", "url": "https://instagram.com/alfdhiw_" },
+      { "label": "LinkedIn", "url": "https://www.linkedin.com/in/alif-fadhil-wibowo" }
+    ],
+    "contactHeadline": "Have a project in mind?",
+    "contactBody": "Let’s turn your next idea into a clear digital experience. Tell me what you’re working on, and we can take it from there."
+  },
+  "projects": [
+    {
+      "slug": "karind", "title": "Karya Indonesia (Karind)", "category": "Music Ecosystem Platform", "projectType": "real", "featured": true, "published": true, "order": 1,
+      "summary": "An Indonesian music ecosystem bringing music distribution, merchandise, and concert ticketing together.",
+      "coverImage": { "src": "dist/img/portfolio/karind.png", "alt": "Karind music platform homepage with music, store, ticketing, studio, and talent navigation", "caption": "Karind homepage: a shared entry point for music, merchandise, ticketing, studio, and talent services." },
+      "tags": ["Web Platform", "Music"], "services": ["Web Development"], "role": "Full Stack Developer", "timelineText": "1–3 weeks (typical project range)", "tools": [],
+      "liveUrl": "https://staging.karind.id", "galleryImages": [],
+      "sections": [
+        {
+          "heading": "Overview",
+          "paragraphs": [
+            "Karya Indonesia (Karind) presents an Indonesian music ecosystem in one web platform. Its introduction connects music distribution, merchandise, and concert ticketing, while the main navigation also introduces Studio and Talent services.",
+            "The public homepage is the starting point for understanding that wider offer. It needs to communicate the platform’s music identity while giving visitors a clear route into the service they need."
+          ]
+        },
+        {
+          "heading": "The challenge",
+          "paragraphs": [
+            "A multi-service platform has more than one visitor intent. Someone looking for an event, an artist, or merchandise should not have to interpret the entire ecosystem before choosing where to go.",
+            "The interface therefore needs two levels of communication: a concise introduction to Karind as a whole, and distinct entry points for exploring its individual services."
+          ]
+        },
+        {
+          "heading": "My role & scope",
+          "paragraphs": [
+            "I worked as a full stack programmer, covering frontend and backend development. This case study focuses on the public-facing experience documented in the project preview: the introduction, navigation, search entry point, and account actions.",
+            "My typical development range is one to three weeks per project, depending on complexity. The duration above represents that general working range, not a confirmed historical schedule for this release."
+          ]
+        },
+        {
+          "heading": "Interface approach",
+          "paragraphs": [
+            "The homepage separates its navigation from the main promotional message. Home, Store, Ticketing, Studio, and Talent appear as recognizable destinations, with icons providing an additional visual cue.",
+            "A dark foundation keeps the concert photography prominent. Red accents connect the brand mark, selected navigation, registration action, and music-related message, while large white type carries the introduction."
+          ]
+        },
+        {
+          "heading": "Key features",
+          "paragraphs": [
+            "A prominent search field introduces product, song, event, and artist discovery without requiring visitors to select a service first. Separate Masuk and Daftar actions distinguish returning users from new visitors.",
+            "The hero explains the relationship between music distribution, merchandise sales, and concert tickets. Together with the service navigation, it presents the breadth of the platform before visitors continue into a particular area."
+          ]
+        },
+        {
+          "heading": "Outcome",
+          "paragraphs": [
+            "The homepage brings Karind’s music identity and service entry points into a single public introduction. It communicates a connected platform rather than presenting each service as an unrelated destination.",
+            "Search, service navigation, and account access are visible together, allowing the introduction and the next available actions to be read in the same place."
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "matsuri-castle", "title": "Matsuri Castle", "category": "Restaurant Landing Page", "projectType": "real", "featured": true, "published": true, "order": 2,
+      "summary": "A Japanese restaurant landing page with an image-led introduction and an approachable brand experience.",
+      "coverImage": { "src": "dist/img/portfolio/matsuri2.png", "alt": "Matsuri Castle Japanese restaurant website with sushi photography", "caption": "Matsuri Castle homepage: sushi photography, restaurant identity, and section-based navigation." },
+      "tags": ["Landing Page", "Restaurant"], "services": ["Web Development"], "role": "Full Stack Developer", "timelineText": "1–3 weeks (typical project range)", "tools": ["HTML5", "CSS3", "JavaScript", "Bootstrap", "jQuery", "Owl Carousel"],
+      "liveUrl": "https://alfdhiw.github.io/Web-MatsuriCastle/", "galleryImages": [],
+      "sections": [
+        {
+          "heading": "Overview",
+          "paragraphs": ["Matsuri Castle is a restaurant landing page built around Japanese food photography and an introduction to the restaurant. It brings promotional content, food highlights, contact information, and a location section into one browsing experience."]
+        },
+        {
+          "heading": "The challenge",
+          "paragraphs": ["A restaurant website needs to create an immediate sense of the food while keeping practical information accessible. Large photography can establish the atmosphere, but visitors still need recognizable routes to the menu, restaurant information, and address."]
+        },
+        {
+          "heading": "My role & scope",
+          "paragraphs": [
+            "My programming role is full stack development. The work presented here is the static frontend published on GitHub Pages, with HTML, CSS, and JavaScript supported by Bootstrap, jQuery, and Owl Carousel.",
+            "The implementation builds on an existing restaurant template, whose original author credit remains in the published source."
+          ]
+        },
+        {
+          "heading": "Interface approach",
+          "paragraphs": ["The opening composition uses food photography as the main visual, with a high-contrast restaurant message over the image. Section-based navigation provides a way to move beyond the introduction without turning the presentation into a collection of separate pages."]
+        },
+        {
+          "heading": "Key features",
+          "paragraphs": [
+            "The published implementation contains an image-led slider, restaurant introduction, food highlights, contact form interface, and address section. Bootstrap styles and a responsive stylesheet provide the layout foundation, while jQuery and Owl Carousel support the presentation interactions.",
+            "The food-led introduction is followed by more practical sections, including the contact form interface and restaurant address, giving the page a progression from atmosphere to information."
+          ]
+        },
+        {
+          "heading": "Outcome",
+          "paragraphs": ["The published page provides a single destination for exploring the restaurant’s visual identity and practical information. Food photography establishes the first impression, while the navigation and supporting sections provide routes into the rest of the presentation."]
+        }
+      ]
+    },
+    {
+      "slug": "pasar-iwak", "title": "Pasar Iwak", "category": "Marketplace Platform", "projectType": "real", "featured": true, "published": true, "order": 3,
+      "summary": "A freshwater fish marketplace connecting buyers, farmers, and sellers, with a focus on the Kendal community.",
+      "coverImage": { "src": "dist/img/portfolio/pasariwak.PNG", "alt": "Pasar Iwak freshwater fish marketplace homepage with fish, feed, seed, auction, and seller discovery entry points", "caption": "Original Pasar Iwak homepage: product categories, search, auction promotion, and seller discovery." },
+      "tags": ["Marketplace", "Community"], "services": ["Web Development"], "role": "Full Stack Developer", "timelineText": "1–3 weeks (typical project range)", "tools": [],
+      "galleryImages": [],
+      "sections": [
+        {
+          "heading": "Overview",
+          "paragraphs": ["Pasar Iwak is a marketplace for freshwater fish and related products, with an emphasis on the Kendal community. The original homepage brings buyers, fish farmers, and sellers into a shared product-discovery experience."]
+        },
+        {
+          "heading": "The challenge",
+          "paragraphs": ["The platform needs to make different types of discovery understandable within the same storefront. Buyers may start with fish, feed, or seed, while others may want to find a seller or explore an auction. Each route needs a recognizable place in the homepage hierarchy."]
+        },
+        {
+          "heading": "My role & scope",
+          "paragraphs": ["I contributed as a full stack programmer. This presentation focuses on the marketplace homepage preserved in the project screenshot, including its category navigation, search entry point, account actions, and promotional areas."]
+        },
+        {
+          "heading": "Interface approach",
+          "paragraphs": [
+            "The header keeps product navigation, search, the cart indicator, and account actions together. A secondary group of links separates supporting information, marketplace partners, and the community forum from the main shopping navigation.",
+            "Below the header, a large fish-farming image introduces the marketplace, while smaller panels give auctions and seller recommendations their own space. Green and teal accents connect the brand identity with the discovery controls."
+          ]
+        },
+        {
+          "heading": "Key features",
+          "paragraphs": ["The captured interface includes Ikan, Pakan, and Bibit categories, a product search field, Masuk and Daftar actions, a cart indicator, and entry points for Lelang Ikan and Rekomendasi Penjual. Supporting panels also introduce product quality, service, transactions, and contacting sellers."]
+        },
+        {
+          "heading": "Outcome",
+          "paragraphs": ["The original homepage brings product discovery and seller discovery into one marketplace introduction. The preserved interface shows how category navigation, search, and promotional routes can coexist without making every visitor follow the same starting path."]
+        }
+      ]
+    },
+    {
+      "slug": "simone", "title": "SIMONE", "category": "Web Application", "projectType": "real", "featured": true, "published": true, "order": 4,
+      "summary": "An online internship registration system for Semarang District Court.",
+      "coverImage": { "src": "dist/img/portfolio/simone.PNG", "alt": "SIMONE online internship registration system for Pengadilan Negeri Semarang", "caption": "SIMONE public introduction: online internship registration for Pengadilan Negeri Semarang." },
+      "tags": ["Registration", "Institutional System"], "services": ["Web Development"], "role": "Full Stack Developer", "timelineText": "1–3 weeks (typical project range)", "tools": [],
+      "galleryImages": [],
+      "sections": [
+        {
+          "heading": "Overview",
+          "paragraphs": ["SIMONE is a web-based internship registration system for Pengadilan Negeri Semarang, or Semarang District Court. Its public introduction explains the service before applicants enter the account-based areas of the system."]
+        },
+        {
+          "heading": "The challenge",
+          "paragraphs": ["An institutional application needs to identify the organization and explain its purpose before asking visitors to sign in. The first screen also needs to distinguish learning about the internship service from accessing an existing account."]
+        },
+        {
+          "heading": "My role & scope",
+          "paragraphs": ["I worked as a full stack programmer on the web application. The portfolio walkthrough uses the public introduction, rather than applicant records or authenticated screens, to explain the entry experience."]
+        },
+        {
+          "heading": "Interface approach",
+          "paragraphs": ["The screen pairs a clear institutional heading and a short service description with an illustration. A green background unifies the page, while white text and controls define the reading order. Login is separated into the header, and Read more provides a second route from the introduction."]
+        },
+        {
+          "heading": "Key features",
+          "paragraphs": [
+            "The public page identifies online internship registration as the core service. Its introduction also lists attendance, grades, available places, and certificates as parts of the wider internship experience.",
+            "Read more and Login serve different entry needs: understanding the service and accessing an account. Both remain visible without competing with the main institutional message."
+          ]
+        },
+        {
+          "heading": "Outcome",
+          "paragraphs": ["The public screen gives applicants an identifiable starting point, explains the system’s purpose, and separates information from account access. The introduction communicates the wider internship service without exposing applicant records in the public presentation."]
+        }
+      ]
+    },
+    {
+      "slug": "siculi", "title": "SICULI", "category": "Operational System", "projectType": "real", "featured": false, "published": true, "order": 5,
+      "summary": "An internal leave application system for Semarang District Court, bringing leave records and status summaries into an administrative dashboard.",
+      "coverImage": { "src": "dist/img/portfolio/siculi.PNG", "alt": "SICULI administrative dashboard with leave-status summaries, employee navigation, and a searchable leave-application table", "caption": "SICULI administrative overview: leave-status summaries above the latest application records." },
+      "tags": ["Dashboard", "Internal Workflow"], "services": ["Web Development"], "role": "Full Stack Developer", "timelineText": "1–3 weeks (typical project range)", "tools": [],
+      "galleryImages": [],
+      "sections": [
+        {
+          "heading": "Overview",
+          "paragraphs": ["SICULI is a web-based leave application system for Pengadilan Negeri Semarang. The administrative dashboard brings leave information, organizational data navigation, and application records into one operational view."]
+        },
+        {
+          "heading": "The challenge",
+          "paragraphs": ["An administrative user needs both a quick overview and access to individual records. A summary alone cannot explain which request needs attention, while a table alone makes the overall state harder to scan. The dashboard needs to support both levels without mixing them together."]
+        },
+        {
+          "heading": "My role & scope",
+          "paragraphs": ["I contributed as a full stack programmer to the web application. This case study focuses on the administrative dashboard shown in the original preview, including its summary cards, record table, and organizational navigation."]
+        },
+        {
+          "heading": "Interface approach",
+          "paragraphs": [
+            "A persistent sidebar groups employee and organizational data separately from leave-related records. The main area opens with status summaries before introducing the detailed table of recent applications.",
+            "Each summary combines a text label and a count with a color accent. The table then presents the dates, leave type, and status of an application in a consistent row structure."
+          ]
+        },
+        {
+          "heading": "Key features",
+          "paragraphs": [
+            "The preview distinguishes total, approved, rejected, and postponed leave applications. The application table includes search, a page-size selector, pagination, leave dates, return dates, leave type, and a text status badge.",
+            "Sidebar groups provide entry points for employees, supervisors, the chair, employee grades, positions, leave data, and permission data. Keeping these groups in persistent navigation leaves the main content area available for the current operational task."
+          ]
+        },
+        {
+          "heading": "Outcome",
+          "paragraphs": ["The dashboard places an aggregate view and record-level information on the same screen. Administrators can read the displayed status categories before inspecting individual entries, with search and pagination controls located alongside the detailed records."]
+        }
+      ]
+    }
+  ],
+  "services": [
+    { "id": "web", "title": "Web Design & Development", "summary": "Responsive websites and practical web applications, connecting considered interfaces with reliable backend logic.", "capabilities": ["Responsive interfaces", "Backend & API integration", "Operational systems"], "mockupImage": { "src": "dist/img/portfolio/karind.png", "alt": "Karind, an example of Alif’s web development work" } },
+    { "id": "uiux", "title": "UI/UX Design", "summary": "Clear visual hierarchies and interaction flows that make complex tasks feel simple, from the first impression to the next action.", "capabilities": ["Interface design", "Interaction flows", "Visual hierarchy"], "mockupImage": { "src": "dist/img/portfolio/matsuri2.png", "alt": "Matsuri Castle interface, shown as a visual example" } },
+    { "id": "cross-platform", "title": "Cross-Platform Development", "summary": "Flexible digital solutions that work consistently across modern web environments, with careful attention to usability on every screen.", "capabilities": ["Adaptive layouts", "Cross-browser experiences", "Web-based products"], "mockupImage": { "src": "dist/img/portfolio/pasariwak.PNG", "alt": "Pasar Iwak web interface, shown as a visual example" } }
+  ],
+  "experience": [
+    { "id": "independent", "organization": "Independent Projects", "role": "Full Stack Web Development", "startDate": "2021", "isCurrent": true, "description": "Web products, application logic, APIs, and practical digital systems.", "previewImage": { "src": "dist/img/portfolio/karind.png", "alt": "Karind project preview" }, "projectSlug": "karind" },
+    { "id": "internship", "organization": "Institutional Systems", "role": "Web Development Intern", "startDate": "2023", "endDate": "2024", "isCurrent": false, "description": "Web-based registration and internal operational systems.", "previewImage": { "src": "dist/img/portfolio/simone.PNG", "alt": "SIMONE internship registration system preview" }, "projectSlug": "simone" },
+    { "id": "education", "organization": "Universitas Dian Nuswantoro", "role": "Informatics Engineering", "startDate": "2019", "endDate": "2023", "isCurrent": false, "description": "Informatics Engineering graduate." }
+  ],
+  "faqs": [
+    { "question": "What types of projects do you work on?", "answer": "I focus on web-based products: portfolio sites, landing pages, dashboards, operational systems, and marketplace-style platforms." },
+    { "question": "Can you work with an existing design?", "answer": "Yes. I can implement an existing design system or help refine the interface direction before development begins." },
+    { "question": "Do you build both frontend and backend?", "answer": "Yes. My work can cover responsive interfaces, backend logic, databases, and API integration depending on the project’s needs." },
+    { "question": "How do we start a project?", "answer": "Start with a short conversation about your goal, users, expected features, and timeline. From there we can define the best next step." },
+    { "question": "Are you available for collaboration?", "answer": "Yes, for selected freelance and collaborative opportunities. Use the contact CTA to get in touch." }
+  ]
+}
