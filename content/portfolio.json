@@ -232,8 +232,51 @@
     { "id": "cross-platform", "title": "Cross-Platform Development", "summary": "Flexible digital solutions that work consistently across modern web environments, with careful attention to usability on every screen.", "capabilities": ["Adaptive layouts", "Cross-browser experiences", "Web-based products"], "mockupImage": { "src": "dist/img/portfolio/pasariwak.PNG", "alt": "Pasar Iwak web interface, shown as a visual example" } }
   ],
   "experience": [
-    { "id": "independent", "organization": "Independent Projects", "role": "Full Stack Web Development", "startDate": "2021", "isCurrent": true, "description": "Web products, application logic, APIs, and practical digital systems.", "previewImage": { "src": "dist/img/portfolio/karind.png", "alt": "Karind project preview" }, "projectSlug": "karind" },
-    { "id": "internship", "organization": "Institutional Systems", "role": "Web Development Intern", "startDate": "2023", "endDate": "2024", "isCurrent": false, "description": "Web-based registration and internal operational systems.", "previewImage": { "src": "dist/img/portfolio/simone.PNG", "alt": "SIMONE internship registration system preview" }, "projectSlug": "simone" },
+    {
+      "id": "independent", "organization": "Web Development - PT Karya Indonesia", "role": "Full Stack Web Development", "startDate": "2025", "isCurrent": true,
+      "description": [
+        "Develop responsive web interfaces and connect them to backend application logic.",
+        "Manage application data and integrate APIs to support connected features.",
+        "Translate functional requirements into practical workflows, keeping frontend and backend behavior aligned.",
+        "Write readable, maintainable code with a focus on clear user experiences and everyday digital operations."
+      ],
+      "previewImage": { "src": "dist/img/portfolio/karind.png", "alt": "Karind project preview", "caption": "Karind homepage" },
+      "galleryImages": [
+        { "src": "dist/img/portfolio/karind-dashboard.png", "alt": "Karind MusiPay dashboard with a digital wallet summary and transaction, event, and booking navigation", "caption": "MusiPay dashboard" },
+        { "src": "dist/img/portfolio/karind-login.png", "alt": "Karind login page with music artwork, email and password fields, and a Google sign-in option", "caption": "Karind login page" }
+      ],
+      "projectSlug": "karind"
+    },
+    {
+      "id": "bps-semarang", "organization": "Badan Pusat Statistik (BPS) Kota Semarang", "role": "Web Application - Backend Developer", "startDate": "2025-08", "endDate": "2026-01", "isCurrent": false,
+      "description": [
+        "Contribute to SIMKADPRO backend development during my internship, supporting IMK data validation and product-directory workflows.",
+        "Manage business and product records through structured data models and create, read, update, and delete operations.",
+        "Implement server-side validation and data processing to support uploads, data cleaning, and anomaly-review workflows.",
+        "Support authentication and access control for administrative features and user management.",
+        "Connect backend data with dashboards, regional and industry filters, search, and CSV export features.",
+        "Collaborate with the internship team to test application workflows, investigate defects, and document implementation progress."
+      ],
+      "previewImage": { "src": "dist/img/portfolio/bps-semarang/simkadpro-directory.png", "alt": "SIMKADPRO public IMK product directory for BPS Kota Semarang with regional and industry filters, business search, and CSV export", "caption": "SIMKADPRO — public IMK product directory" },
+      "galleryImages": [
+        { "src": "dist/img/portfolio/bps-semarang/simkadpro-dashboard.png", "alt": "SIMKADPRO admin dashboard with data-quality summaries, IMK counts, user management navigation, and a weekly prediction chart", "caption": "SIMKADPRO — administrative dashboard" },
+        { "src": "dist/img/portfolio/bps-semarang/simkadpro-login.png", "alt": "SIMKADPRO sign-in page with email and password fields", "caption": "SIMKADPRO — authentication page" },
+        { "src": "dist/img/portfolio/bps-semarang/simkadpro-business-detail.png", "alt": "SIMKADPRO business detail page with industry classification, regional information, and a product description", "caption": "SIMKADPRO — business and product details" },
+        { "src": "dist/img/portfolio/bps-semarang/internship-presentation.jpeg", "alt": "Internship team presenting their final report at BPS Kota Semarang", "caption": "BPS Kota Semarang — internship report presentation", "width": 1280, "height": 960 },
+        { "src": "dist/img/portfolio/bps-semarang/internship-certificate.jpeg", "alt": "Internship certificate handover at BPS Kota Semarang", "caption": "BPS Kota Semarang — internship certificate handover", "width": 1280, "height": 720 },
+        { "src": "dist/img/portfolio/bps-semarang/internship-team.jpeg", "alt": "Internship participants and BPS Kota Semarang staff together after the presentation", "caption": "BPS Kota Semarang — internship team and staff", "width": 1280, "height": 960 }
+      ]
+    },
+    {
+      "id": "internship", "organization": "Institutional Systems - Pengadilan Negeri Semarang", "role": "Web Development Intern", "startDate": "2023", "endDate": "2024", "isCurrent": false,
+      "description": "Web-based registration and internal operational systems.",
+      "previewImage": { "src": "dist/img/portfolio/simone.PNG", "alt": "SIMONE internship registration system preview", "caption": "SIMONE public introduction — original screenshot" },
+      "galleryImages": [
+        { "src": "dist/img/portfolio/simone-dashboard-concept.png", "alt": "Reconstructed SIMONE participant dashboard with demo application status, attendance, documents, and an administrative review timeline", "caption": "SIMONE participant dashboard — interface reconstruction, demo data" },
+        { "src": "dist/img/portfolio/simone-registration-concept.png", "alt": "Reconstructed SIMONE internship registration form with demo identity and academic fields and a three-step application flow", "caption": "SIMONE registration form — interface reconstruction, demo data" }
+      ],
+      "projectSlug": "simone"
+    },
     { "id": "education", "organization": "Universitas Dian Nuswantoro", "role": "Informatics Engineering", "startDate": "2019", "endDate": "2023", "isCurrent": false, "description": "Informatics Engineering graduate." }
   ],
   "faqs": [

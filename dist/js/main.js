@@ -249,12 +249,47 @@
     }
     document.querySelectorAll('.experience-row[data-preview]').forEach(row => {
       const button = row.querySelector('.experience-trigger');
+      const panel = document.getElementById(button.getAttribute('aria-controls'));
+      if (!panel) return;
+      let animation = null;
+      function settle() {
+        const previous = animation; animation = null; previous?.cancel();
+        panel.hidden = button.getAttribute('aria-expanded') !== 'true';
+        panel.classList.remove('is-experience-transitioning');
+      }
+      function setOpen(open) {
+        const startHeight = panel.hidden ? 0 : panel.getBoundingClientRect().height;
+        const style = getComputedStyle(panel);
+        const startOpacity = panel.hidden ? 0 : parseFloat(style.opacity);
+        const startPadding = panel.hidden ? 0 : parseFloat(style.paddingBottom);
+        const previous = animation; animation = null; previous?.cancel();
+        if (!open && panel.contains(document.activeElement)) button.focus({ preventScroll: true });
+        button.setAttribute('aria-expanded', String(open));
+        panel.setAttribute('aria-hidden', String(!open)); panel.inert = !open; hide();
+        if (reducedMotion.matches || !panel.animate) { settle(); return; }
+        panel.hidden = false;
+        const naturalPadding = parseFloat(getComputedStyle(panel).paddingBottom);
+        panel.classList.add('is-experience-transitioning');
+        const endHeight = open ? panel.scrollHeight : 0;
+        const config = getComputedStyle(row.closest('.experience'));
+        const transition = panel.animate({
+          height: [startHeight + 'px', endHeight + 'px'],
+          paddingBottom: [startPadding + 'px', (open ? naturalPadding : 0) + 'px'],
+          opacity: [startOpacity, open ? 1 : 0]
+        }, {
+          duration: parseFloat(config.getPropertyValue('--experience-toggle-duration')) || 560,
+          easing: config.getPropertyValue('--experience-toggle-ease').trim() || 'cubic-bezier(.4, 0, .2, 1)'
+        });
+        animation = transition;
+        transition.onfinish = () => { if (animation === transition) settle(); };
+      }
+      button.setAttribute('aria-expanded', 'false');
+      panel.hidden = true; panel.inert = true; panel.setAttribute('aria-hidden', 'true');
       button.addEventListener('click', () => {
-        const panel = document.getElementById(button.getAttribute('aria-controls')), open = button.getAttribute('aria-expanded') !== 'true';
-        button.setAttribute('aria-expanded', String(open)); panel.hidden = !open; hide();
+        setOpen(button.getAttribute('aria-expanded') !== 'true');
       });
       function show(event) {
-        if (!allowFloating() || button.getAttribute('aria-expanded') === 'true') return;
+        if (!allowFloating() || button.getAttribute('aria-expanded') === 'true' || panel.classList.contains('is-experience-transitioning')) return;
         activeRow = row; previewImage.src = row.dataset.preview; previewImage.alt = row.dataset.previewAlt;
         preview.hidden = false; x = event.clientX; y = event.clientY; move(event);
         requestAnimationFrame(() => { if (activeRow) preview.classList.add('is-visible'); });
@@ -267,9 +302,162 @@
         show({ clientX: box.left + box.width * .55, clientY: box.top + box.height / 2 });
       });
       button.addEventListener('blur', hide);
+      reducedMotion.addEventListener('change', () => { if (reducedMotion.matches) settle(); });
+      addEventListener('resize', settle, { passive: true });
+      addEventListener('pagehide', settle);
     });
     reducedMotion.addEventListener('change', hide); finePointer.addEventListener('change', hide);
     addEventListener('scroll', hide, { passive: true }); addEventListener('pagehide', hide, { once: true });
+  }
+  function initExperienceCarousels() {
+    document.querySelectorAll('[data-experience-carousel]').forEach(carousel => {
+      const stage = carousel.querySelector('[data-carousel-stage]');
+      const slides = [...carousel.querySelectorAll('[data-carousel-slide]')];
+      const controls = carousel.querySelector('[data-carousel-controls]');
+      if (!stage || !controls || slides.length < 2 || carousel.classList.contains('is-ready')) return;
+      const dots = [...carousel.querySelectorAll('[data-carousel-go]')];
+      const status = carousel.querySelector('[data-carousel-status]');
+      const hoverPointer = matchMedia('(hover: hover) and (pointer: fine)');
+      const interval = 5000;
+      const poses = {
+        active: { transform: 'translate3d(0, 0, 55px)', opacity: 1, filter: 'brightness(1)' },
+        previous: { transform: 'translate3d(-46%, 12px, -180px) rotateY(24deg) scale(.84)', opacity: .7, filter: 'brightness(.85)' },
+        next: { transform: 'translate3d(46%, 12px, -180px) rotateY(-24deg) scale(.84)', opacity: .7, filter: 'brightness(.85)' },
+        off: { transform: 'translate3d(0, 16px, -340px) rotateY(0deg) scale(.72)', opacity: 0, filter: 'brightness(.85)' }
+      };
+      let current = 0, pointer = null, timer = 0, hovered = false, windowActive = true, pageActive = true, motion = null, motionVisual = null;
+      function stopMotion() { const cleanup = motion; motion = null; cleanup?.(); }
+      function stopTimer() { clearTimeout(timer); timer = 0; status.setAttribute('aria-live', 'polite'); }
+      function resetCursor() { delete stage.dataset.carouselCursor; }
+      function edgeDirection(event) {
+        if (!hoverPointer.matches || (event.pointerType !== 'mouse' && event.pointerType !== 'pen')) return 0;
+        const bounds = stage.getBoundingClientRect(), x = event.clientX - bounds.left, y = event.clientY - bounds.top;
+        if (!bounds.width || x < 0 || x > bounds.width || y < 0 || y > bounds.height) return 0;
+        return x <= bounds.width * .2 ? -1 : x >= bounds.width * .8 ? 1 : 0;
+      }
+      function updateCursor(event) {
+        const direction = edgeDirection(event), next = direction < 0 ? 'previous' : direction > 0 ? 'next' : '';
+        if (!next) resetCursor();
+        else if (stage.dataset.carouselCursor !== next) stage.dataset.carouselCursor = next;
+      }
+      function canRotate() {
+        const focused = carousel.contains(document.activeElement) && document.activeElement.matches(':focus-visible');
+        const bounds = stage.getBoundingClientRect();
+        return hovered && windowActive && pageActive && !document.hidden && !reducedMotion.matches && hoverPointer.matches && !pointer && !focused && !carousel.closest('[inert]') && bounds.width > 0 && bounds.bottom > 0 && bounds.top < innerHeight;
+      }
+      function schedule() {
+        stopTimer();
+        if (!canRotate()) return;
+        status.setAttribute('aria-live', 'off');
+        timer = setTimeout(() => { timer = 0; if (canRotate()) select(current + 1, 1); else stopTimer(); }, interval);
+      }
+      function render(direction = 0) {
+        slides.forEach((slide, position) => {
+          let offset = (position - current + slides.length) % slides.length;
+          if (offset > slides.length / 2 || (slides.length === 2 && offset && direction > 0)) offset -= slides.length;
+          slide.dataset.carouselPosition = offset === 0 ? 'active' : offset === -1 ? 'previous' : offset === 1 ? 'next' : 'off';
+          slide.setAttribute('aria-hidden', String(position !== current));
+          slide.inert = position !== current;
+        });
+        dots.forEach((dot, index) => dot.setAttribute('aria-pressed', String(index === current)));
+        status.textContent = `${current + 1} / ${slides.length}`;
+      }
+      function select(index, direction = Math.sign(index - current) || 1) {
+        const interrupted = Boolean(motion);
+        const previousPositions = new Map(slides.map(slide => [slide, slide.dataset.carouselPosition]));
+        const before = new Map(slides.map(slide => {
+          const style = getComputedStyle(motionVisual?.slide === slide ? motionVisual.element : slide);
+          return [slide, { transform: style.transform, opacity: style.opacity, filter: style.filter }];
+        }));
+        stopTimer(); stopMotion();
+        const next = (index + slides.length) % slides.length;
+        if (next === current) { schedule(); return; }
+        const outgoing = slides[current], incoming = slides[next];
+        current = next;
+        const animate = !reducedMotion.matches && stage.getClientRects().length > 0 && typeof incoming.animate === 'function';
+        carousel.classList.add('is-changing'); render(direction);
+        if (animate) {
+          // A decorative copy enters from the right even when the real slide is
+          // currently on the left, so last → first never reverses the 3D loop.
+          const ghost = incoming.cloneNode(true);
+          ghost.removeAttribute('data-carousel-slide'); ghost.removeAttribute('aria-label'); ghost.removeAttribute('aria-roledescription');
+          ghost.classList.add('is-carousel-ghost'); ghost.setAttribute('role', 'presentation'); ghost.setAttribute('aria-hidden', 'true'); ghost.inert = true;
+          ghost.querySelectorAll('img').forEach(image => { image.alt = ''; });
+          stage.append(ghost); incoming.style.visibility = 'hidden'; outgoing.style.zIndex = '2';
+          const style = getComputedStyle(carousel);
+          const options = { duration: parseFloat(style.getPropertyValue('--carousel-motion-duration')) || 850, easing: style.getPropertyValue('--carousel-motion-ease').trim() || 'cubic-bezier(.4, 0, .2, 1)' };
+          const animations = [outgoing.animate([before.get(outgoing), direction > 0 ? poses.previous : poses.next], options), ghost.animate([interrupted ? before.get(incoming) : direction > 0 ? poses.next : poses.previous, poses.active], options)];
+          const background = slides.filter(slide => slide !== outgoing && slide !== incoming);
+          background.forEach(slide => {
+            const target = poses[slide.dataset.carouselPosition] || poses.off;
+            const recycled = previousPositions.get(slide) !== slide.dataset.carouselPosition && ['previous', 'next'].includes(previousPositions.get(slide)) && ['previous', 'next'].includes(slide.dataset.carouselPosition);
+            slide.style.visibility = 'visible'; slide.style.zIndex = '0';
+            // Recycle side cards behind the active images instead of teleporting
+            // across the stage when the sequence wraps around.
+            const frames = recycled ? [before.get(slide), { ...poses.off, offset: .5 }, target] : [before.get(slide), target];
+            animations.push(slide.animate(frames, options));
+          });
+          const cleanup = () => {
+            animations.forEach(animation => animation.cancel()); ghost.remove();
+            incoming.style.removeProperty('visibility'); outgoing.style.removeProperty('z-index'); carousel.classList.remove('is-changing');
+            background.forEach(slide => { slide.style.removeProperty('visibility'); slide.style.removeProperty('z-index'); });
+            if (motionVisual?.element === ghost) motionVisual = null;
+          };
+          motion = cleanup;
+          motionVisual = { slide: incoming, element: ghost };
+          Promise.allSettled(animations.map(animation => animation.finished)).then(() => { if (motion === cleanup) { motion = null; cleanup(); } });
+        } else carousel.classList.remove('is-changing');
+        schedule();
+      }
+      slides.forEach(slide => { slide.querySelectorAll('img').forEach(image => { image.draggable = false; }); });
+      carousel.classList.add('is-ready'); controls.hidden = false; render();
+      dots.forEach(dot => dot.addEventListener('click', () => select(Number(dot.dataset.carouselGo))));
+      carousel.addEventListener('keydown', event => {
+        if (event.altKey || event.ctrlKey || event.metaKey) return;
+        const index = { ArrowLeft: current - 1, ArrowRight: current + 1, Home: 0, End: slides.length - 1 }[event.key];
+        if (index === undefined) return;
+        event.preventDefault(); select(index);
+      });
+      stage.addEventListener('pointerdown', event => {
+        if (!event.isPrimary || event.button !== 0) return;
+        stopTimer();
+        pointer = { id: event.pointerId, x: event.clientX, y: event.clientY, edge: edgeDirection(event) };
+        stage.setPointerCapture?.(event.pointerId);
+      });
+      stage.addEventListener('pointerup', event => {
+        if (!pointer || pointer.id !== event.pointerId) return;
+        const dx = event.clientX - pointer.x, dy = event.clientY - pointer.y, edge = pointer.edge;
+        pointer = null;
+        if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.2) select(current + (dx < 0 ? 1 : -1));
+        else if (edge && edgeDirection(event) === edge && Math.abs(dx) < 8 && Math.abs(dy) < 8) select(current + edge, edge);
+        else schedule();
+      });
+      const resetPointer = () => { pointer = null; schedule(); };
+      stage.addEventListener('pointercancel', () => { resetPointer(); resetCursor(); });
+      stage.addEventListener('lostpointercapture', resetPointer);
+      stage.addEventListener('pointermove', updateCursor, { passive: true });
+      stage.addEventListener('pointerenter', event => {
+        updateCursor(event);
+        if (event.pointerType !== 'mouse' && event.pointerType !== 'pen') return;
+        hovered = true; schedule();
+      });
+      stage.addEventListener('pointerleave', () => { hovered = false; stopTimer(); resetCursor(); });
+      carousel.addEventListener('focusin', stopTimer);
+      carousel.addEventListener('focusout', () => queueMicrotask(schedule));
+      const panel = carousel.closest('.experience-inline');
+      panel?.previousElementSibling?.querySelector('.experience-trigger')?.addEventListener('click', () => {
+        if (panel.hidden || panel.inert) { hovered = false; stopTimer(); stopMotion(); resetCursor(); }
+      });
+      reducedMotion.addEventListener('change', () => { stopMotion(); schedule(); });
+      hoverPointer.addEventListener('change', () => { resetCursor(); schedule(); });
+      document.addEventListener('visibilitychange', () => { if (document.hidden) resetCursor(); schedule(); });
+      addEventListener('blur', () => { windowActive = false; stopTimer(); resetCursor(); });
+      addEventListener('focus', () => { windowActive = true; schedule(); });
+      addEventListener('scroll', () => { hovered = stage.matches(':hover'); resetCursor(); schedule(); }, { passive: true });
+      addEventListener('resize', resetCursor, { passive: true });
+      addEventListener('pagehide', () => { pageActive = false; pointer = null; stopTimer(); stopMotion(); resetCursor(); });
+      addEventListener('pageshow', () => { pageActive = true; hovered = stage.matches(':hover'); schedule(); });
+    });
   }
   function initFaqs() {
     document.querySelectorAll('.faq-list details').forEach(detail => {
@@ -323,5 +511,5 @@
     });
     if (document.body.dataset.page === 'project' && document.referrer) document.querySelector('h1')?.focus({ preventScroll: true });
   }
-  initNavigation(); initFilters(); initServices(); initExperience(); initFaqs(); initRoutes(); initPortraitReveal(); initReveal();
+  initNavigation(); initFilters(); initServices(); initExperience(); initExperienceCarousels(); initFaqs(); initRoutes(); initPortraitReveal(); initReveal();
 })();

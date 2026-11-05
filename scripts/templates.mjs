@@ -70,10 +70,17 @@ function formatDate(value) {
   if (/^\d{4}$/.test(value)) return value;
   return new Intl.DateTimeFormat('en', { month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${value}-01T00:00:00Z`));
 }
-function experience(data) {
+function experienceMedia(item) {
+  const slides = [item.previewImage, ...(item.galleryImages || [])];
+  if (slides.length < 2) return image(item.previewImage);
+  return `<section class="experience-carousel" data-experience-carousel role="region" aria-roledescription="carousel" aria-label="${e(item.organization)} project screenshots"><div class="experience-carousel-stage" data-carousel-stage tabindex="0" aria-label="Project screenshots. Hover to rotate automatically, click the edges, or use the left and right arrow keys.">${slides.map((media, index) => `<figure class="experience-slide" data-carousel-slide role="group" aria-roledescription="slide" aria-label="${index + 1} of ${slides.length}">${image(media, '', 'experience-slide-image')}<figcaption>${e(media.caption || media.alt)}</figcaption></figure>`).join('')}</div><div class="experience-carousel-controls" data-carousel-controls hidden><span class="sr-only" data-carousel-status role="status" aria-live="polite" aria-atomic="true">1 / ${slides.length}</span><div class="experience-carousel-dots" aria-label="Choose a screenshot">${slides.map((media, index) => `<button class="experience-carousel-dot" type="button" data-carousel-go="${index}" aria-label="Show screenshot ${index + 1}: ${e(media.caption || media.alt)}" aria-pressed="${index === 0}"><span aria-hidden="true"></span></button>`).join('')}</div></div></section>`;
+}
+export function renderExperience(data) {
   return `<section class="experience section" id="experience" aria-label="Experience">${sectionHeading('Experience', 'Experience', `<span class="experience-years">${data.profile.experienceYears}+ years of experience</span>`)}<p class="experience-intro reveal">${e(data.profile.about)}</p><div class="experience-list">${data.experience.map(experience => {
     const description = `<span class="experience-org">${e(experience.organization)}</span><span class="experience-role">${e(experience.role)}</span><span class="experience-period">${e(formatDate(experience.startDate))} — ${experience.isCurrent ? 'Present' : e(formatDate(experience.endDate))}</span>`;
-    return `<article class="experience-row reveal" ${experience.previewImage ? `data-preview="${e(asset(experience.previewImage))}" data-preview-alt="${e(experience.previewImage.alt)}"` : ''}>${experience.previewImage ? `<h3><button class="experience-trigger" type="button" aria-expanded="false" aria-controls="experience-${e(experience.id)}">${description}<span class="experience-indicator" aria-hidden="true">↗</span></button></h3><div class="experience-inline" id="experience-${e(experience.id)}" hidden>${image(experience.previewImage)}<p>${e(experience.description)}</p><a class="text-link" href="work/${experience.projectSlug}/index.html" data-work-link>Related project ${arrow}</a></div>` : `<div class="experience-static"><h3>${description}</h3></div>`}</article>`;
+    const details = Array.isArray(experience.description) ? `<ul class="experience-responsibilities">${experience.description.map(text => `<li>${e(text)}</li>`).join('')}</ul>` : `<p>${e(experience.description)}</p>`;
+    const relatedProject = experience.projectSlug ? `<a class="text-link" href="work/${e(experience.projectSlug)}/index.html" data-work-link>Related project ${arrow}</a>` : '';
+    return `<article class="experience-row reveal" ${experience.previewImage ? `data-preview="${e(asset(experience.previewImage))}" data-preview-alt="${e(experience.previewImage.alt)}"` : ''}>${experience.previewImage ? `<h3><button class="experience-trigger" type="button" aria-expanded="true" aria-controls="experience-${e(experience.id)}">${description}<span class="experience-indicator" aria-hidden="true">↗</span></button></h3><div class="experience-inline" id="experience-${e(experience.id)}">${experienceMedia(experience)}${details}${relatedProject}</div>` : `<div class="experience-static"><h3>${description}</h3></div>`}</article>`;
   }).join('\n')}</div><div class="experience-skills reveal"><span class="small-label">Working with</span><div class="tags">${data.profile.skills.map(skill => `<span>${e(skill)}</span>`).join('')}</div></div></section>`;
 }
 function contact(data, base = '', includeFaqs = false) {
@@ -113,7 +120,7 @@ function documentHtml(data, content, { base = '', title, description, cover, kin
 `;
 }
 export function renderHome(data) {
-  return documentHtml(data, `${header(data)}<main id="main">${hero(data)}${work(data)}${services(data)}${experience(data)}${contact(data, '', true)}</main>`, { title: `${data.profile.fullName} — ${data.profile.role}`, description: data.profile.shortBio, cover: data.profile.portrait });
+  return documentHtml(data, `${header(data)}<main id="main">${hero(data)}${work(data)}${services(data)}${renderExperience(data)}${contact(data, '', true)}</main>`, { title: `${data.profile.fullName} — ${data.profile.role}`, description: data.profile.shortBio, cover: data.profile.portrait });
 }
 export function renderProject(data, project) {
   const base = '../../';

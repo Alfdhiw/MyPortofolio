@@ -180,7 +180,7 @@ img { display: block; max-width: 100%; }
 .service-mockup { transform: rotate(-4deg); transition: transform var(--motion-standard) var(--ease-standard), opacity var(--motion-standard); }
 .service-mockup img { width: 100%; height: auto; aspect-ratio: 1.55; object-fit: contain; border-radius: 8px; box-shadow: var(--preview-shadow); }
 .service-mockup figcaption { margin-top: 14px; font-size: 13px; color: var(--color-muted-inverse); }
-.experience { position: relative; color: var(--color-ink-inverse); background: var(--color-dark-section); }
+.experience { --experience-toggle-duration: 560ms; --experience-toggle-ease: cubic-bezier(.4, 0, .2, 1); position: relative; color: var(--color-ink-inverse); background: var(--color-dark-section); }
 .experience .ghost-title { color: var(--color-ghost-dark); }
 .experience .section-heading > p { color: var(--color-muted-inverse); text-align: right; }
 .experience .small-label { color: var(--color-muted-inverse); }
@@ -192,10 +192,48 @@ img { display: block; max-width: 100%; }
 .experience-org { grid-column: 1; font-size: clamp(1.25rem, 2.2vw, 1.8rem); line-height: 1.3; font-weight: 500; letter-spacing: -.025em; }
 .experience-role { grid-column: 1; font-size: 14px; font-weight: 400; color: var(--color-muted-inverse); }
 .experience-period { grid-column: 2; grid-row: 1 / 3; align-self: center; font-size: 13px; font-weight: 400; color: var(--color-muted-inverse); }
-.experience-indicator { grid-column: 3; grid-row: 1 / 3; align-self: center; font-size: 24px; }
-.experience-inline { padding-bottom: 28px; max-width: 560px; }
+.experience-indicator { grid-column: 3; grid-row: 1 / 3; align-self: center; font-size: 24px; transition: transform var(--experience-toggle-duration) var(--experience-toggle-ease); }
+.experience-trigger[aria-expanded="true"] .experience-indicator { transform: rotate(90deg); }
+.experience-inline { width: 100%; min-width: 0; max-width: none; padding-bottom: 32px; }
+.experience-inline.is-experience-transitioning { overflow: hidden; will-change: height, opacity; }
 .experience-inline img { width: 100%; height: auto; border-radius: 6px; margin-bottom: 18px; }
 .experience-inline p { color: var(--color-muted-inverse); font-size: 14px; margin-bottom: 12px; }
+.experience-responsibilities { display: grid; gap: 12px; margin: 26px 0 20px; padding-left: 22px; color: var(--color-muted-inverse); font-size: 14px; line-height: 1.75; }
+.experience-responsibilities li { padding-left: 5px; overflow-wrap: anywhere; }
+.experience-responsibilities li::marker { color: var(--color-ink-inverse); }
+.experience-carousel { --carousel-motion-duration: 850ms; --carousel-motion-ease: cubic-bezier(.4, 0, .2, 1); min-width: 0; margin-bottom: 24px; }
+.experience-carousel-stage { display: grid; gap: 22px; outline-offset: 4px; }
+@media (hover: hover) and (pointer: fine) {
+  .experience-carousel.is-ready .experience-carousel-stage[data-carousel-cursor="previous"] { cursor: url("../img/cursor-circle-left.svg") 18 18, w-resize; }
+  .experience-carousel.is-ready .experience-carousel-stage[data-carousel-cursor="next"] { cursor: url("../img/cursor-circle-right.svg") 18 18, e-resize; }
+}
+.experience-slide { min-width: 0; }
+.experience-slide .experience-slide-image { width: 100%; aspect-ratio: 2.1; object-fit: contain; margin: 0; border: 1px solid rgb(255 255 255 / .1); border-radius: 12px 12px 0 0; background: #0D0D0D; }
+.experience-slide figcaption { padding: 11px 16px; border-radius: 0 0 12px 12px; background: #191919; color: var(--color-muted-inverse); font-size: 12px; line-height: 1.5; }
+.experience-carousel.is-ready .experience-carousel-stage { position: relative; display: block; aspect-ratio: 1.95; overflow: hidden; overflow: clip; perspective: 1200px; touch-action: pan-y pinch-zoom; }
+.experience-carousel.is-ready .experience-slide { position: absolute; top: 8%; left: 11%; width: 78%; margin: 0; border-radius: 12px; box-shadow: 0 12px 28px rgb(0 0 0 / .16); backface-visibility: hidden; transition: transform var(--carousel-motion-duration) var(--carousel-motion-ease), opacity var(--carousel-motion-duration) var(--carousel-motion-ease), filter var(--carousel-motion-duration) var(--carousel-motion-ease); }
+.experience-carousel.is-changing .experience-slide { transition: none; will-change: transform, opacity; }
+.experience-carousel .is-carousel-ghost { z-index: 4 !important; pointer-events: none; }
+.experience-carousel.is-ready .experience-slide[data-carousel-position="active"] { z-index: 3; opacity: 1; filter: none; transform: translate3d(0, 0, 55px); }
+.experience-carousel.is-ready .experience-slide[data-carousel-position="previous"] { z-index: 1; opacity: .7; filter: brightness(.85); transform: translate3d(-46%, 12px, -180px) rotateY(24deg) scale(.84); }
+.experience-carousel.is-ready .experience-slide[data-carousel-position="next"] { z-index: 1; opacity: .7; filter: brightness(.85); transform: translate3d(46%, 12px, -180px) rotateY(-24deg) scale(.84); }
+.experience-carousel.is-ready .experience-slide[data-carousel-position="off"] { z-index: 0; opacity: 0; visibility: hidden; transform: translate3d(0, 0, -300px) scale(.7); }
+.experience-carousel-controls { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.experience-carousel-dots { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; max-width: 100%; }
+.experience-carousel-dot { display: grid; flex: 0 0 44px; place-items: center; width: 44px; height: 44px; padding: 0; background: transparent; }
+.experience-carousel-dot span { width: 7px; height: 7px; border-radius: 999px; background: #737373; transition: width 180ms ease, background-color 180ms ease; }
+.experience-carousel-dot[aria-pressed="true"] span { width: 22px; background: var(--color-ink-inverse); }
+@media (max-width: 767px) {
+  .experience-carousel.is-ready .experience-carousel-stage { aspect-ratio: 1.65; }
+  .experience-carousel.is-ready .experience-slide { left: 9%; width: 82%; }
+  .experience-slide figcaption { padding: 8px 10px; font-size: 11px; }
+  .experience-carousel-controls { gap: 4px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .experience-carousel.is-ready .experience-carousel-stage { aspect-ratio: auto; perspective: none; }
+  .experience-carousel.is-ready .experience-slide { position: relative; top: auto; left: auto; width: 100%; display: none; transform: none; transition: none; filter: none; }
+  .experience-carousel.is-ready .experience-slide[data-carousel-position="active"] { display: block; transform: none; }
+}
 .text-link { display: inline-flex; gap: 12px; align-items: center; min-height: 44px; text-decoration: underline; text-underline-offset: 5px; font-size: 14px; }
 .experience-skills { margin-top: 40px; display: flex; align-items: baseline; gap: 24px; }
 .experience-skills .small-label { white-space: nowrap; }

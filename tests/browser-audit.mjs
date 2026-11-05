@@ -9,7 +9,11 @@ import { createStaticServer, root } from '../scripts/serve.mjs';
 import { loadData } from '../scripts/build.mjs';
 
 const output = join(root, 'docs/audit');
+const simonePreviewsOnly = process.argv.includes('--simone-previews-only');
 const portfolio = await loadData();
+const carouselSource = await readFile(join(root, 'dist/js/main.js'), 'utf8');
+const carouselInterval = Number(carouselSource.match(/function initExperienceCarousels\(\)[\s\S]*?const interval = (\d+);/)?.[1]);
+assert.ok(Number.isFinite(carouselInterval) && carouselInterval > 0, 'Carousel interval must be a positive number.');
 await mkdir(output, { recursive: true });
 const profile = await mkdtemp(join(tmpdir(), 'portfolio-browser-'));
 const candidates = [process.env.BROWSER_PATH, 'C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'].filter(Boolean);
@@ -20,7 +24,7 @@ const server = createStaticServer(); server.listen(0, '127.0.0.1'); await once(s
 const origin = `http://127.0.0.1:${server.address().port}`;
 const chrome = spawn(executable, ['--headless=new', '--no-first-run', '--no-default-browser-check', '--disable-background-networking', '--remote-debugging-port=0', `--user-data-dir=${profile}`, 'about:blank'], { windowsHide: true, stdio: 'ignore' });
 const delay = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds));
-const report = { date: '2026-11-01', reference: 'PRD 01, 02, 03; source video not available', checks: [], viewports: [], exceptions: [], failedLocalRequests: [] };
+const report = { date: '2026-11-06', mode: simonePreviewsOnly ? 'simone-previews-only' : 'full', reference: 'PRD 01, 02, 03; source video not available', checks: [], viewports: [], exceptions: [], failedLocalRequests: [] };
 let socket;
 try {
   let port;
@@ -52,8 +56,8 @@ try {
     if (result.exceptionDetails) throw new Error(result.exceptionDetails.exception?.description || result.exceptionDetails.text);
     return result.result.value;
   }
-  async function wait(expression) {
-    for (let attempt = 0; attempt < 100; attempt++) {
+  async function wait(expression, timeoutMs = 5000) {
+    for (let attempt = 0; attempt < Math.ceil(timeoutMs / 50); attempt++) {
       try { if (await evaluate(expression)) return; }
       catch (error) { if (!/context|execution/i.test(error.message)) throw error; }
       await delay(50);
@@ -92,6 +96,7 @@ try {
     }
   }
   await call('Page.enable'); await call('Runtime.enable'); await call('Network.enable');
+  if (!simonePreviewsOnly) {
   await call('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
   await viewport(1440); await navigate('/');
   await check('Homepage has five ordered sections and one h1', async () => {
@@ -477,8 +482,57 @@ try {
     await wait("[...document.querySelectorAll('.service-panel')].every(e => e.hidden)");
     assert.equal(await evaluate("document.querySelectorAll('.service-trigger[aria-expanded=true]').length"), 0);
   });
+  await check('Experience panels open and close smoothly, reverse from their current height, and settle accessibly', async () => {
+    await call('Input.dispatchMouseEvent',{type:'mouseMoved',x:0,y:0});
+    for(const id of ['independent','bps-semarang','internship']) {
+      await viewport(1440);
+      await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'no-preference'}]});
+      await evaluate(`(() => {const button=document.querySelector('[aria-controls="experience-${id}"]'); if(button.getAttribute('aria-expanded')==='true') button.click();})()`);
+      await wait(`document.querySelector('#experience-${id}').hidden`);
+      await evaluate(`document.querySelector('[aria-controls="experience-${id}"]').click()`);
+      const opening=await evaluate(`(() => {const panel=document.querySelector('#experience-${id}'),animation=panel.getAnimations()[0];return {hidden:panel.hidden,inert:panel.inert,aria:panel.getAttribute('aria-hidden'),duration:animation.effect.getTiming().duration,frames:animation.effect.getKeyframes().map(frame=>({height:frame.height,opacity:frame.opacity})),overflow:getComputedStyle(panel).overflowY};})()`);
+      assert.equal(opening.hidden,false); assert.equal(opening.inert,false); assert.equal(opening.aria,'false');
+      assert.equal(opening.duration,560); assert.equal(opening.overflow,'hidden');
+      assert.equal(parseFloat(opening.frames[0].height),0); assert.equal(Number(opening.frames[0].opacity),0);
+      assert.ok(parseFloat(opening.frames.at(-1).height)>100); assert.equal(Number(opening.frames.at(-1).opacity),1);
+      await wait(`!document.querySelector('#experience-${id}').classList.contains('is-experience-transitioning')`);
+      await evaluate(`document.querySelector('#experience-${id}').querySelector('.text-link, .experience-carousel-dot').focus(); document.querySelector('[aria-controls="experience-${id}"]').click()`);
+      assert.equal(await evaluate(`document.activeElement===document.querySelector('[aria-controls="experience-${id}"]')`),true,`${id}: closing restores trigger focus`);
+      assert.equal(await evaluate(`document.querySelector('#experience-${id}').inert`),true,`${id}: closing makes the panel inert immediately`);
+      assert.equal(await evaluate(`document.querySelector('#experience-${id}').hidden`),false);
+      await settle();
+      const reversal=await evaluate(`(() => {const panel=document.querySelector('#experience-${id}'),height=panel.getBoundingClientRect().height;document.querySelector('[aria-controls="experience-${id}"]').click();return {height,start:parseFloat(panel.getAnimations()[0].effect.getKeyframes()[0].height)};})()`);
+      assert.ok(Math.abs(reversal.height-reversal.start)<1,JSON.stringify(reversal));
+      await evaluate(`for(let count=0;count<3;count++) document.querySelector('[aria-controls="experience-${id}"]').click()`);
+      await wait(`document.querySelector('#experience-${id}').hidden && !document.querySelector('#experience-${id}').classList.contains('is-experience-transitioning')`);
+      assert.equal(await evaluate(`document.querySelector('#experience-${id}').getAnimations().length`),0);
+      assert.equal(await evaluate(`document.querySelector('#experience-${id}').style.height`),'');
+      await evaluate(`document.querySelector('[aria-controls="experience-${id}"]').click()`);
+      await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
+      await wait(`!document.querySelector('#experience-${id}').classList.contains('is-experience-transitioning')`);
+      assert.equal(await evaluate(`document.querySelector('#experience-${id}').hidden`),false);
+      assert.equal(await evaluate(`document.querySelector('#experience-${id}').getAnimations().length`),0);
+      await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'no-preference'}]});
+      await evaluate(`document.querySelector('[aria-controls="experience-${id}"]').click(); document.querySelector('[aria-controls="experience-${id}"]').click()`);
+      await viewport(390,true);
+      await wait(`!document.querySelector('#experience-${id}').classList.contains('is-experience-transitioning')`);
+      assert.equal(await evaluate(`document.querySelector('#experience-${id}').hidden`),false);
+      assert.equal(await evaluate(`document.querySelector('#experience-${id}').style.height`),'');
+      await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
+      await wait("matchMedia('(prefers-reduced-motion: reduce)').matches");
+      await settle();
+      await evaluate(`document.querySelector('[aria-controls="experience-${id}"]').focus()`);
+      await call('Input.dispatchKeyEvent',{type:'keyDown',key:'Enter',code:'Enter',windowsVirtualKeyCode:13,text:'\r',unmodifiedText:'\r'});
+      await call('Input.dispatchKeyEvent',{type:'keyUp',key:'Enter',code:'Enter',windowsVirtualKeyCode:13});
+      assert.equal(await evaluate(`document.querySelector('#experience-${id}').hidden`),true,`${id}: reduced-motion keyboard activation closes immediately`);
+      assert.equal(await evaluate(`document.querySelector('#experience-${id}').getAttribute('aria-hidden')`),'true');
+    }
+    await viewport(1440);
+    await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'no-preference'}]});
+  });
   await check('Desktop floating preview follows pointer and stays in viewport', async () => {
     await evaluate("document.querySelectorAll('.experience-trigger[aria-expanded=true]').forEach(button => button.click())");
+    await wait("document.querySelectorAll('.experience-inline.is-experience-transitioning').length === 0");
     const point = await evaluate("(() => { const row = document.querySelector('.experience-row[data-preview]'); row.scrollIntoView({block:'center',behavior:'instant'}); const r = row.getBoundingClientRect(); return {x:r.left + r.width*.6,y:r.top+r.height/2}; })()");
     await settle();
     report.pointerEnvironment = await evaluate("({hover:matchMedia('(hover: hover)').matches,fine:matchMedia('(pointer: fine)').matches,reduced:matchMedia('(prefers-reduced-motion: reduce)').matches})");
@@ -496,6 +550,294 @@ try {
     await wait("document.querySelector('[data-floating-preview]').hidden");
     assert.equal(await evaluate("getComputedStyle(document.querySelector('.hero-name')).opacity"), '1');
   });
+  await check('Experience carousel uses full-width list content and supports 3D with dots only and keyboard navigation', async () => {
+    await viewport(1440);
+    await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'no-preference'}]});
+    await evaluate("(() => {const button=document.querySelector('[aria-controls=experience-independent]'); if(button.getAttribute('aria-expanded')!=='true') button.click();})()");
+    await wait("!document.querySelector('#experience-independent').classList.contains('is-experience-transitioning')");
+    await evaluate("document.querySelector('[data-carousel-stage]').scrollIntoView({block:'center',behavior:'instant'})");
+    await evaluate("Promise.all([...document.querySelectorAll('[data-carousel-slide] img')].map(image=>image.decode())).then(()=>true)");
+    const count=portfolio.experience[0].galleryImages.length+1;
+    assert.equal(await evaluate("document.querySelectorAll('#experience-independent .experience-responsibilities li').length"),portfolio.experience[0].description.length);
+    assert.equal(await evaluate("document.querySelectorAll('#experience-independent [data-carousel-slide]').length"),count);
+    assert.equal(await evaluate("getComputedStyle(document.querySelector('#experience-independent')).maxWidth"),'none');
+    assert.equal(await evaluate("getComputedStyle(document.querySelector('[data-carousel-stage]')).perspective"),'1200px');
+    assert.notEqual(await evaluate("getComputedStyle(document.querySelector('[data-carousel-position=active]')).transform"),'none');
+    assert.equal(await evaluate("document.querySelectorAll('#experience-independent [data-carousel-slide][aria-hidden=false]').length"),1);
+    assert.equal(await evaluate("document.querySelectorAll('[data-carousel-previous],[data-carousel-next]').length"),0);
+    assert.equal(await evaluate("document.querySelector('[data-carousel-status]').classList.contains('sr-only')"),true);
+    await evaluate("document.querySelector('[data-carousel-go=\"1\"]').click()");
+    assert.equal(await evaluate("document.querySelector('[data-carousel-status]').textContent"),`2 / ${count}`);
+    await evaluate("document.querySelector('[data-carousel-go=\"0\"]').click()");
+    assert.equal(await evaluate("document.querySelector('[data-carousel-status]').textContent"),`1 / ${count}`);
+    await evaluate(`document.querySelector('[data-carousel-go="${count-1}"]').click(); document.querySelector('[data-carousel-stage]').focus()`);
+    for(const [key,code,value,expected] of [['Home','Home',36,1],['ArrowLeft','ArrowLeft',37,count],['ArrowRight','ArrowRight',39,1],['End','End',35,count]]) {
+      await call('Input.dispatchKeyEvent',{type:'keyDown',key,code,windowsVirtualKeyCode:value});
+      await call('Input.dispatchKeyEvent',{type:'keyUp',key,code,windowsVirtualKeyCode:value});
+      assert.equal(await evaluate("document.querySelector('[data-carousel-status]').textContent"),`${expected} / ${count}`);
+    }
+    assert.equal(await evaluate("[...document.querySelectorAll('[data-carousel-slide]')].every(slide=>slide.inert===(slide.getAttribute('aria-hidden')==='true'))"),true);
+    await evaluate("document.querySelector('[data-carousel-go=\"0\"]').click(); document.activeElement.blur(); Promise.all(document.querySelector('[data-experience-carousel]').getAnimations({subtree:true}).map(animation=>animation.finished.catch(()=>{})))");
+    await screenshot('experience-carousel-desktop.png');
+    await call('Input.dispatchMouseEvent',{type:'mouseMoved',x:0,y:0});
+    await wait("document.querySelector('[data-floating-preview]').hidden");
+  });
+  await check('Supplied Karind login screenshot renders as its own slide and dot on desktop and mobile', async () => {
+    const gallery=portfolio.experience[0].galleryImages;
+    const index=gallery.findIndex(media=>media.src==='dist/img/portfolio/karind-login.png')+1;
+    assert.ok(index>0);
+    await call('Input.dispatchMouseEvent',{type:'mouseMoved',x:0,y:0});
+    for(const width of [1440,390]) {
+      await viewport(width,width<768);
+      await evaluate(`document.querySelector('[data-carousel-go="${index}"]').click(); document.activeElement.blur(); document.querySelector('[data-carousel-stage]').scrollIntoView({block:'center',behavior:'instant'})`);
+      await evaluate("Promise.all(document.querySelector('[data-experience-carousel]').getAnimations({subtree:true}).map(animation=>animation.finished.catch(()=>{})))");
+      await evaluate("document.querySelector('[data-carousel-slide][data-carousel-position=active] img').decode()");
+      const login=await evaluate("(() => {const slide=document.querySelector('[data-carousel-slide][data-carousel-position=active]'),image=slide.querySelector('img');return {src:image.getAttribute('src'),width:image.naturalWidth,height:image.naturalHeight,caption:slide.querySelector('figcaption').textContent,pressed:document.querySelector('[data-carousel-go][aria-pressed=true]').dataset.carouselGo,overflow:document.documentElement.scrollWidth>innerWidth};})()");
+      assert.equal(login.src,'dist/img/portfolio/karind-login.png');
+      assert.equal(login.caption,'Karind login page'); assert.equal(Number(login.pressed),index);
+      assert.ok(login.width>0 && login.height>0 && !login.overflow);
+      await screenshot(width===1440?'experience-karind-login-desktop.png':'experience-karind-login-mobile.png');
+    }
+    await viewport(1440);
+  });
+  await check('Carousel transitions share 850ms easing, recycle side cards behind and preserve motion on rapid input', async () => {
+    await viewport(1440);
+    await call('Input.dispatchMouseEvent',{type:'mouseMoved',x:0,y:0});
+    await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'no-preference'}]});
+    await evaluate("document.querySelector('[data-carousel-go=\"0\"]').click(); document.activeElement.blur(); document.querySelector('[data-carousel-stage]').scrollIntoView({block:'center',behavior:'instant'}); Promise.all(document.querySelector('[data-experience-carousel]').getAnimations({subtree:true}).map(animation=>animation.finished.catch(()=>{})))");
+    await evaluate("document.querySelector('[data-carousel-go=\"1\"]').click()");
+    const timing=await evaluate("(() => {const root=document.querySelector('[data-experience-carousel]'),ghost=root.querySelector('.is-carousel-ghost'),side=[...root.querySelectorAll('[data-carousel-slide]')].find(slide=>slide.style.zIndex==='0');return {duration:ghost.getAnimations()[0].effect.getTiming().duration,easing:ghost.getAnimations()[0].effect.getTiming().easing,cssDuration:getComputedStyle(root).getPropertyValue('--carousel-motion-duration').trim(),sideFrames:side.getAnimations()[0].effect.getKeyframes().map(frame=>({opacity:frame.opacity,transform:frame.transform}))};})()");
+    assert.equal(timing.duration,850); assert.equal(timing.cssDuration,'850ms');
+    assert.match(timing.easing,/cubic-bezier\(0\.4, 0, 0\.2, 1\)/);
+    assert.ok(timing.sideFrames.some(frame=>Number(frame.opacity)===0 && frame.transform.includes('-340px')),JSON.stringify(timing));
+    await settle();
+    const continuity=await evaluate("(() => {const before=getComputedStyle(document.querySelector('.is-carousel-ghost')).transform; document.querySelector('[data-carousel-go=\"2\"]').click(); const outgoing=[...document.querySelectorAll('[data-carousel-slide]')].find(slide=>slide.style.zIndex==='2'); return {before,from:outgoing.getAnimations()[0].effect.getKeyframes()[0].transform};})()");
+    assert.equal(continuity.from,continuity.before);
+    await evaluate("for(const index of [0,2,1,0]) document.querySelector('[data-carousel-go=\"'+index+'\"]').click(); Promise.all(document.querySelector('[data-experience-carousel]').getAnimations({subtree:true}).map(animation=>animation.finished.catch(()=>{})))");
+    await wait("document.querySelectorAll('.is-carousel-ghost').length === 0");
+    assert.equal(await evaluate("document.querySelectorAll('.is-carousel-ghost').length"),0,'Rapid input leaves no decorative slide behind');
+    assert.equal(await evaluate("document.querySelector('[data-experience-carousel]').classList.contains('is-changing')"),false);
+    assert.equal(await evaluate("[...document.querySelectorAll('[data-carousel-slide]')].every(slide=>!slide.style.visibility && !slide.style.zIndex)"),true);
+    await evaluate("document.querySelector('[data-carousel-go=\"1\"]').click()");
+    await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
+    await wait("document.querySelectorAll('.is-carousel-ghost').length === 0");
+    assert.equal(await evaluate("document.querySelectorAll('.is-carousel-ghost').length"),0,'Reduced motion clears the running transition');
+    assert.equal(await evaluate("getComputedStyle(document.querySelector('[data-carousel-position=active]')).transform"),'none');
+    await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'no-preference'}]});
+    await evaluate("document.querySelector('[data-carousel-go=\"0\"]').click(); Promise.all(document.querySelector('[data-experience-carousel]').getAnimations({subtree:true}).map(animation=>animation.finished.catch(()=>{})))");
+  });
+  await check('Carousel edge cursors use local circle arrows, allow directional clicks, and leave center and touch taps unchanged', async () => {
+    await viewport(1440);
+    await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
+    await wait("matchMedia('(prefers-reduced-motion: reduce)').matches");
+    await call('Input.dispatchMouseEvent',{type:'mouseMoved',x:0,y:0});
+    await evaluate("document.querySelector('[data-carousel-go=\"0\"]').click(); document.activeElement.blur(); document.querySelector('[data-carousel-stage]').scrollIntoView({block:'center',behavior:'instant'})");
+    await settle();
+    const count=portfolio.experience[0].galleryImages.length+1;
+    const points=await evaluate("(() => {const r=document.querySelector('[data-carousel-stage]').getBoundingClientRect();return {left:{x:r.x+r.width*.1,y:r.y+r.height*.5},center:{x:r.x+r.width*.5,y:r.y+r.height*.5},right:{x:r.x+r.width*.9,y:r.y+r.height*.5}};})()");
+    async function move(point) { await call('Input.dispatchMouseEvent',{type:'mouseMoved',...point}); }
+    async function click(point) {
+      await call('Input.dispatchMouseEvent',{type:'mousePressed',...point,button:'left',clickCount:1});
+      await call('Input.dispatchMouseEvent',{type:'mouseReleased',...point,button:'left',clickCount:1});
+    }
+    for(const [side,direction,expected] of [['left','previous',count],['right','next',1]]) {
+      await move(points[side]);
+      const cursor=await evaluate(`({side:document.querySelector('[data-carousel-stage]').dataset.carouselCursor,cursor:getComputedStyle(document.elementFromPoint(${points[side].x},${points[side].y})).cursor})`);
+      assert.equal(cursor.side,direction);
+      assert.ok(cursor.cursor.includes(`cursor-circle-${side}.svg`) && cursor.cursor.includes('18 18'),JSON.stringify(cursor));
+      await click(points[side]);
+      assert.equal(await evaluate("document.querySelector('[data-carousel-status]').textContent"),`${expected} / ${count}`);
+    }
+    await move(points.center); await click(points.center);
+    assert.equal(await evaluate("document.querySelector('[data-carousel-stage]').hasAttribute('data-carousel-cursor')"),false);
+    assert.equal(await evaluate("getComputedStyle(document.querySelector('[data-carousel-stage]')).cursor"),'auto');
+    assert.equal(await evaluate("document.querySelector('[data-carousel-status]').textContent"),`1 / ${count}`);
+    await move(points.left);
+    await call('Input.dispatchMouseEvent',{type:'mousePressed',...points.left,button:'left',clickCount:1});
+    await move(points.center);
+    await call('Input.dispatchMouseEvent',{type:'mouseReleased',...points.center,button:'left',clickCount:1});
+    assert.equal(await evaluate("document.querySelector('[data-carousel-status]').textContent"),`${count} / ${count}`);
+    await call('Input.dispatchMouseEvent',{type:'mouseMoved',x:0,y:0});
+    assert.equal(await evaluate("document.querySelector('[data-carousel-stage]').hasAttribute('data-carousel-cursor')"),false);
+    for(const side of ['left','right']) assert.equal(await evaluate(`fetch('dist/img/cursor-circle-${side}.svg').then(response=>response.status)`),200);
+    const preview=await evaluate(`(async () => {
+      const canvas=document.createElement('canvas'); canvas.width=112; canvas.height=56; const context=canvas.getContext('2d'); context.fillStyle='#242424'; context.fillRect(0,0,112,56);
+      for(const [index,side] of ['left','right'].entries()) {const image=new Image(); image.src='dist/img/cursor-circle-'+side+'.svg'; await image.decode(); context.drawImage(image,10+index*56,10,36,36);}
+      return canvas.toDataURL('image/png').split(',')[1];
+    })()`);
+    await writeFile(join(output,'carousel-cursor-icons.png'),Buffer.from(preview,'base64'));
+    await viewport(390,true);
+    await evaluate("document.querySelector('[data-carousel-go=\"0\"]').click(); document.querySelector('[data-carousel-stage]').scrollIntoView({block:'center',behavior:'instant'})");
+    const touch=await evaluate("(() => {const r=document.querySelector('[data-carousel-stage]').getBoundingClientRect();return {x:r.x+r.width*.1,y:r.y+r.height*.5};})()");
+    await call('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{...touch,id:1}]});
+    await call('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+    assert.equal(await evaluate("document.querySelector('[data-carousel-stage]').hasAttribute('data-carousel-cursor')"),false);
+    assert.equal(await evaluate("document.querySelector('[data-carousel-status]').textContent"),`1 / ${count}`);
+    await viewport(1440);
+    await call('Input.dispatchMouseEvent',{type:'mouseMoved',x:0,y:0});
+  });
+  await check(`Hover rotates every ${carouselInterval / 1000} seconds to the left, wraps forward to slide one, and pauses outside the stage`, async () => {
+    report.carouselInterval = carouselInterval;
+    await viewport(1440);
+    await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'no-preference'}]});
+    await call('Input.dispatchMouseEvent',{type:'mouseMoved',x:0,y:0});
+    await evaluate("document.querySelector('[data-carousel-go=\"0\"]').click(); document.activeElement.blur(); document.querySelector('[data-carousel-stage]').scrollIntoView({block:'center',behavior:'instant'})");
+    const count=portfolio.experience[0].galleryImages.length+1;
+    const status=()=>evaluate("document.querySelector('[data-carousel-status]').textContent");
+    const point=await evaluate("(() => {const r=document.querySelector('[data-carousel-stage]').getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};})()");
+    const hover=()=>call('Input.dispatchMouseEvent',{type:'mouseMoved',x:point.x,y:point.y});
+    try {
+      await delay(carouselInterval+150); assert.equal(await status(),`1 / ${count}`);
+      await hover(); await delay(Math.max(100,carouselInterval-400)); assert.equal(await status(),`1 / ${count}`);
+      for(let step=1;step<=count;step++) {
+        const expected=`${step%count+1} / ${count}`;
+        await wait(`document.querySelector('[data-carousel-status]').textContent===${JSON.stringify(expected)}`,carouselInterval+1500);
+        const frames=await evaluate("(() => {const ghost=document.querySelector('.is-carousel-ghost'),outgoing=[...document.querySelectorAll('[data-carousel-slide]')].find(slide=>slide.style.zIndex==='2');return {ghost:!!ghost,decorative:ghost?.getAttribute('aria-hidden'),incoming:ghost?.getAnimations()[0]?.effect.getKeyframes()[0]?.transform,outgoing:outgoing?.getAnimations()[0]?.effect.getKeyframes().at(-1)?.transform};})()");
+        assert.equal(frames.ghost,true); assert.equal(frames.decorative,'true');
+        assert.match(frames.incoming,/translate3d\(46%/); assert.match(frames.outgoing,/translate3d\(-46%/);
+      }
+      await call('Input.dispatchMouseEvent',{type:'mouseMoved',x:0,y:0});
+      await evaluate("Promise.all(document.querySelector('[data-experience-carousel]').getAnimations({subtree:true}).map(animation=>animation.finished.catch(()=>{})))");
+      assert.equal(await evaluate("document.querySelectorAll('.is-carousel-ghost').length"),0);
+      await delay(carouselInterval+150); assert.equal(await status(),`1 / ${count}`);
+      await hover(); await evaluate("window.dispatchEvent(new Event('blur'))");
+      await delay(carouselInterval+150); assert.equal(await status(),`1 / ${count}`);
+      await evaluate("window.dispatchEvent(new Event('focus'))");
+      await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
+      await delay(carouselInterval+150); assert.equal(await status(),`1 / ${count}`);
+      await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'no-preference'}]});
+      await evaluate("document.querySelector('[aria-controls=experience-independent]').click()");
+      await delay(carouselInterval+150); assert.equal(await status(),`1 / ${count}`);
+      await evaluate("document.querySelector('[aria-controls=experience-independent]').click()");
+    } finally {
+      await call('Input.dispatchMouseEvent',{type:'mouseMoved',x:0,y:0});
+      await evaluate("window.dispatchEvent(new Event('focus')); document.activeElement.blur()");
+    }
+  });
+  await check('Experience carousel fits six viewports and becomes a flat accessible slideshow with reduced motion', async () => {
+    report.experienceCarousel=[];
+    for(const width of [360,390,768,1024,1440,1920]) {
+      await viewport(width,width<768);
+      await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'no-preference'}]});
+      await evaluate("Promise.all(document.querySelector('[data-experience-carousel]').getAnimations({subtree:true}).map(animation=>animation.finished.catch(()=>{})))");
+      const normal=await evaluate("(() => {const stage=document.querySelector('[data-carousel-stage]').getBoundingClientRect(),active=document.querySelector('[data-carousel-position=active]').getBoundingClientRect();return {pageWidth:document.documentElement.scrollWidth,top:active.top-stage.top,left:active.left-stage.left,right:stage.right-active.right,bottom:stage.bottom-active.bottom};})()");
+      assert.ok(normal.pageWidth<=width+1 && normal.top>=0 && normal.left>=0 && normal.right>=0 && normal.bottom>=0,JSON.stringify({width,...normal}));
+      await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
+      await evaluate("document.querySelector('[data-carousel-stage]').scrollIntoView({block:'center',behavior:'instant'})");
+      const result=await evaluate(`(() => {const panel=document.querySelector('#experience-independent'),stage=panel.querySelector('[data-carousel-stage]'),r=panel.getBoundingClientRect(),slide=panel.querySelector('[data-carousel-position=active]');return {width:innerWidth,pageWidth:document.documentElement.scrollWidth,panelWidth:r.width,rowWidth:panel.parentElement.getBoundingClientRect().width,perspective:getComputedStyle(stage).perspective,transform:getComputedStyle(slide).transform,visible:[...panel.querySelectorAll('[data-carousel-slide]')].filter(slide=>getComputedStyle(slide).display!=='none').length,controls:[...panel.querySelectorAll('.experience-carousel-controls button')].map(button=>{const r=button.getBoundingClientRect();return {width:r.width,height:r.height,right:r.right};})};})()`);
+      report.experienceCarousel.push(result);
+      assert.ok(result.pageWidth<=width+1,JSON.stringify(result));
+      assert.ok(Math.abs(result.panelWidth-result.rowWidth)<1,JSON.stringify(result));
+      assert.equal(result.perspective,'none'); assert.equal(result.transform,'none'); assert.equal(result.visible,1);
+      assert.ok(result.controls.every(control=>control.width>=44 && control.height>=44 && control.right<=width),JSON.stringify(result));
+      if(width===390) await screenshot('experience-carousel-mobile.png');
+    }
+    await viewport(1440);
+  });
+  await check('Experience carousel accepts horizontal touch swipe and preserves the selected slide after closing', async () => {
+    await viewport(390,true);
+    await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'no-preference'}]});
+    await evaluate("document.querySelector('[data-carousel-go=\"0\"]').click(); document.querySelector('[data-carousel-stage]').scrollIntoView({block:'center',behavior:'instant'})");
+    const point=await evaluate("(() => {const r=document.querySelector('[data-carousel-stage]').getBoundingClientRect();return {x:r.x+r.width*.8,y:r.y+r.height*.4};})()");
+    await call('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:point.x,y:point.y,id:1}]});
+    await call('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:point.x-60,y:point.y,id:1}]});
+    await call('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:point.x-140,y:point.y,id:1}]});
+    await call('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+    const expected=`2 / ${portfolio.experience[0].galleryImages.length+1}`;
+    await wait(`document.querySelector('[data-carousel-status]').textContent===${JSON.stringify(expected)}`);
+    await evaluate("document.activeElement.blur(); Promise.all(document.querySelector('[data-experience-carousel]').getAnimations({subtree:true}).map(animation=>animation.finished.catch(()=>{})))");
+    await screenshot('experience-carousel-mobile-3d.png');
+    await evaluate("document.querySelector('[aria-controls=experience-independent]').click(); document.querySelector('[aria-controls=experience-independent]').click()");
+    assert.equal(await evaluate("document.querySelector('[data-carousel-status]').textContent"),expected);
+    await evaluate("document.querySelector('[aria-controls=experience-independent]').click()");
+    await viewport(1440);
+    await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
+  });
+  await check('BPS internship follows Karind, displays all seven original assets and keeps carousel state independent on desktop and mobile', async () => {
+    const bps=portfolio.experience.find(item=>item.id==='bps-semarang');
+    const media=[bps.previewImage,...bps.galleryImages];
+    await viewport(1440);
+    await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'no-preference'}]});
+    await call('Input.dispatchMouseEvent',{type:'mouseMoved',x:0,y:0});
+    const order=await evaluate("[...document.querySelectorAll('.experience-trigger')].map(button=>button.getAttribute('aria-controls'))");
+    assert.deepEqual(order.slice(0,2),['experience-independent','experience-bps-semarang']);
+    assert.equal(await evaluate("document.querySelector('[aria-controls=experience-bps-semarang] .experience-period').textContent"),'Aug 2025 — Jan 2026');
+    assert.equal(await evaluate("document.querySelector('[aria-controls=experience-bps-semarang] .experience-role').textContent"),bps.role);
+    await evaluate("document.querySelector('[aria-controls=experience-bps-semarang]').click()");
+    assert.equal(await evaluate("document.querySelector('#experience-bps-semarang').getAnimations()[0].effect.getTiming().duration"),560);
+    await wait("!document.querySelector('#experience-bps-semarang').classList.contains('is-experience-transitioning')");
+    assert.equal(await evaluate("document.querySelectorAll('#experience-bps-semarang [data-carousel-slide]').length"),7);
+    assert.equal(await evaluate("document.querySelectorAll('#experience-bps-semarang [data-carousel-go]').length"),7);
+    assert.equal(await evaluate("document.querySelectorAll('#experience-bps-semarang .experience-responsibilities li').length"),bps.description.length);
+    assert.equal(await evaluate("document.querySelector('#experience-bps-semarang .text-link')"),null);
+    assert.equal(await evaluate("document.querySelector('a[href*=undefined]')"),null);
+    const karindStatus=await evaluate("document.querySelector('#experience-independent [data-carousel-status]').textContent");
+    await evaluate("Promise.all([...document.querySelectorAll('#experience-bps-semarang img')].map(image=>image.decode())).then(()=>true)");
+    for(const width of [1440,390,360]) {
+      await viewport(width,width<768);
+      await evaluate("document.querySelector('#experience-bps-semarang [data-carousel-stage]').scrollIntoView({block:'center',behavior:'instant'})");
+      await settle();
+      const dimensions=await evaluate("(() => {const panel=document.querySelector('#experience-bps-semarang'),stage=panel.querySelector('[data-carousel-stage]'),r=stage.getBoundingClientRect();return {perspective:getComputedStyle(stage).perspective,width:innerWidth,pageWidth:document.documentElement.scrollWidth,buttons:[...panel.querySelectorAll('[data-carousel-go]')].map(button=>{const b=button.getBoundingClientRect();return {width:b.width,height:b.height,left:b.left,right:b.right};})};})()");
+      assert.equal(dimensions.perspective,'1200px'); assert.ok(dimensions.pageWidth<=width+1);
+      assert.ok(dimensions.buttons.every(button=>button.width>=44 && button.height>=44 && button.left>=0 && button.right<=width),JSON.stringify(dimensions));
+      for(const [index,image] of media.entries()) {
+        await evaluate(`document.querySelector('#experience-bps-semarang [data-carousel-go="${index}"]').click(); document.activeElement.blur(); Promise.all(document.querySelector('#experience-bps-semarang [data-experience-carousel]').getAnimations({subtree:true}).map(animation=>animation.finished.catch(()=>{})))`);
+        const active=await evaluate("(() => {const panel=document.querySelector('#experience-bps-semarang'),slide=panel.querySelector('[data-carousel-position=active]'),image=slide.querySelector('img');return {src:image.getAttribute('src'),width:image.naturalWidth,height:image.naturalHeight,fit:getComputedStyle(image).objectFit,caption:slide.querySelector('figcaption').textContent,status:panel.querySelector('[data-carousel-status]').textContent,pressed:panel.querySelector('[aria-pressed=true]').dataset.carouselGo};})()");
+        assert.equal(active.src,image.src); assert.equal(active.width,image.width); assert.equal(active.height,image.height);
+        assert.equal(active.fit,'contain'); assert.equal(active.caption,image.caption);
+        assert.equal(active.status,`${index+1} / 7`); assert.equal(Number(active.pressed),index);
+        assert.equal(await evaluate("document.querySelector('#experience-independent [data-carousel-status]').textContent"),karindStatus);
+      }
+      if(width!==360) {
+        await evaluate("document.querySelector('#experience-bps-semarang [data-carousel-go=\"4\"]').click(); Promise.all(document.querySelector('#experience-bps-semarang [data-experience-carousel]').getAnimations({subtree:true}).map(animation=>animation.finished.catch(()=>{})))");
+        await evaluate("document.querySelector('[aria-controls=experience-bps-semarang]').scrollIntoView({block:'start',behavior:'instant'})");
+        await screenshot(width===1440?'experience-bps-desktop.png':'experience-bps-mobile.png');
+      }
+    }
+    await viewport(1440);
+    await evaluate("document.querySelector('#experience-bps-semarang [data-carousel-go=\"6\"]').click(); document.activeElement.blur(); document.querySelector('#experience-bps-semarang [data-carousel-stage]').scrollIntoView({block:'center',behavior:'instant'}); Promise.all(document.querySelector('#experience-bps-semarang [data-experience-carousel]').getAnimations({subtree:true}).map(animation=>animation.finished.catch(()=>{})))");
+    await settle();
+    const point=await evaluate("(() => {const r=document.querySelector('#experience-bps-semarang [data-carousel-stage]').getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};})()");
+    await call('Input.dispatchMouseEvent',{type:'mouseMoved',...point});
+    await wait("document.querySelector('#experience-bps-semarang [data-carousel-status]').textContent==='1 / 7'",carouselInterval+1500);
+    assert.equal(await evaluate("document.querySelector('#experience-independent [data-carousel-status]').textContent"),karindStatus);
+    await call('Input.dispatchMouseEvent',{type:'mouseMoved',x:0,y:0});
+    await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
+    await wait("document.querySelectorAll('#experience-bps-semarang .is-carousel-ghost').length===0");
+    assert.equal(await evaluate("getComputedStyle(document.querySelector('#experience-bps-semarang [data-carousel-stage]')).perspective"),'none');
+    await evaluate("document.querySelector('[aria-controls=experience-bps-semarang]').click()");
+    await wait("document.querySelector('#experience-bps-semarang').hidden");
+  });
+  await check('SIMONE Institutional Systems keeps the original screenshot and two labelled reconstruction slides without affecting other carousels', async () => {
+    const experience=portfolio.experience.find(item=>item.id==='internship');
+    const media=[experience.previewImage,...experience.galleryImages];
+    const siblings=await evaluate("['independent','bps-semarang'].map(id=>document.querySelector('#experience-'+id+' [data-carousel-status]').textContent)");
+    await call('Input.dispatchMouseEvent',{type:'mouseMoved',x:0,y:0});
+    await viewport(1440);
+    await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'no-preference'}]});
+    await evaluate("document.querySelector('[aria-controls=experience-internship]').click()");
+    await wait("!document.querySelector('#experience-internship').classList.contains('is-experience-transitioning')");
+    assert.equal(await evaluate("document.querySelectorAll('#experience-internship [data-carousel-go]').length"),3);
+    for(const width of [1440,390]) {
+      await viewport(width,width<768);
+      await evaluate("document.querySelector('#experience-internship [data-carousel-stage]').scrollIntoView({block:'center',behavior:'instant'}); Promise.all([...document.querySelectorAll('#experience-internship img')].map(image=>image.decode())).then(()=>true)");
+      for(const [index,image] of media.entries()) {
+        await evaluate(`document.querySelector('#experience-internship [data-carousel-go="${index}"]').click(); document.activeElement.blur(); Promise.all(document.querySelector('#experience-internship [data-experience-carousel]').getAnimations({subtree:true}).map(animation=>animation.finished.catch(()=>{})))`);
+        const active=await evaluate("(() => {const panel=document.querySelector('#experience-internship'),image=panel.querySelector('[data-carousel-position=active] img');return {src:image.getAttribute('src'),width:image.naturalWidth,height:image.naturalHeight,caption:panel.querySelector('[data-carousel-position=active] figcaption').textContent,visible:panel.querySelectorAll('[data-carousel-slide][aria-hidden=false]').length,fit:getComputedStyle(image).objectFit,pressed:panel.querySelector('[aria-pressed=true]').dataset.carouselGo,pageWidth:document.documentElement.scrollWidth};})()");
+        assert.equal(active.src,image.src); assert.equal(active.width,image.width); assert.equal(active.height,image.height);
+        assert.equal(active.caption,image.caption); assert.equal(active.fit,'contain'); assert.equal(active.visible,1);
+        assert.equal(Number(active.pressed),index); assert.ok(active.pageWidth<=width+1);
+      }
+      await evaluate("document.querySelector('[aria-controls=experience-internship]').scrollIntoView({block:'start',behavior:'instant'})");
+      await screenshot(width===1440?'experience-simone-desktop.png':'experience-simone-mobile.png');
+    }
+    assert.deepEqual(await evaluate("['independent','bps-semarang'].map(id=>document.querySelector('#experience-'+id+' [data-carousel-status]').textContent)"),siblings);
+    await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
+    await wait("document.querySelectorAll('#experience-internship .is-carousel-ghost').length===0");
+    await evaluate("document.querySelector('[aria-controls=experience-internship]').click()");
+    await wait("document.querySelector('#experience-internship').hidden");
+    await viewport(1440);
+  });
   await check('Real navigation to detail and browser Back preserve work state', async () => {
     await evaluate("document.querySelector('[data-work-grid] [data-slug=karind] a').click()");
     await wait("document.body.dataset.page === 'project' && location.pathname.includes('/work/karind/')");
@@ -503,6 +845,8 @@ try {
     assert.equal(await evaluate("document.querySelectorAll('.more-work [data-slug=karind]').length"), 0);
     await evaluate("document.querySelector('[data-back]').click()");
     await wait("document.body.dataset.page === 'home'");
+    // Native Back may expose the homepage DOM before its saved filter is restored.
+    await wait("document.querySelector('[data-work-grid]')?.getAttribute('aria-busy') === 'false' && [...document.querySelectorAll('[data-work-grid] .project-card')].filter(e => !e.hidden).length === 5");
     assert.equal(await evaluate("[...document.querySelectorAll('[data-work-grid] .project-card')].filter(e => !e.hidden).length"), 5);
   });
   await check('Animated detail navigation and Back do not leave the homepage faded out', async () => {
@@ -562,6 +906,10 @@ try {
     assert.equal(await evaluate("getComputedStyle(document.querySelector('.portrait-image')).filter"), 'grayscale(1)');
     assert.equal(await evaluate("document.querySelectorAll('.collaboration-dialog').length"),0);
     assert.ok((await evaluate("document.querySelector('.hero-bio .button').getAttribute('href')")).startsWith('mailto:'+portfolio.profile.email));
+    assert.equal(await evaluate("[...document.querySelectorAll('.experience-inline')].every(panel=>!panel.hidden)"),true);
+    assert.equal(await evaluate("document.querySelectorAll('[data-carousel-slide][aria-hidden]').length"),0);
+    assert.equal(await evaluate("document.querySelector('[data-carousel-controls]').hidden"),true);
+    assert.equal(await evaluate("document.querySelectorAll('#experience-independent .experience-responsibilities li').length"),portfolio.experience[0].description.length);
     await call('Emulation.setScriptExecutionDisabled', { value: false });
   });
   await check('Double-click file entry loads homepage and real index.html detail links', async () => {
@@ -572,12 +920,28 @@ try {
     await wait("document.querySelector('.collaboration-dialog')?.open");
     await evaluate("document.querySelector('[data-inquiry-close]').click()");
   });
+  }
+  await check('Editable SIMONE reconstruction sources fit their exact screenshot viewport with demo labels and all form actions visible', async () => {
+    await viewport(1440,false,900);
+    for (const scene of ['dashboard','registration']) {
+      const url=pathToFileURL(join(root,`assets/previews/simone/${scene}.html`)).href;
+      await call('Page.navigate',{url});
+      await wait(`location.href===${JSON.stringify(url)} && document.readyState==='complete'`);
+      await settle();
+      const state=await evaluate("(() => {const footer=document.querySelector('footer'),r=footer.getBoundingClientRect();return {width:innerWidth,height:innerHeight,pageWidth:document.documentElement.scrollWidth,pageHeight:document.documentElement.scrollHeight,footer:footer.textContent,bottom:r.bottom,actions:[...document.querySelectorAll('.form-actions button')].map(button=>button.getBoundingClientRect().bottom)};})()");
+      assert.equal(state.width,1440); assert.equal(state.height,900);
+      assert.ok(state.pageWidth<=1440 && state.pageHeight<=900,JSON.stringify({scene,...state}));
+      assert.ok(state.bottom<=900,JSON.stringify({scene,...state}));
+      assert.match(state.footer,/Rekonstruksi antarmuka · Data demonstrasi/);
+      if(scene==='registration') {assert.equal(state.actions.length,2); assert.ok(state.actions.every(bottom=>bottom<900));}
+    }
+  });
   await check('No runtime errors or failed local asset requests', async () => {
     assert.deepEqual(report.exceptions, []); assert.deepEqual(report.failedLocalRequests, []);
   });
   report.passed = report.checks.filter(check => check.passed).length;
   report.failed = report.checks.length - report.passed;
-  await writeFile(join(output, 'results.json'), JSON.stringify(report, null, 2) + '\n');
+  await writeFile(join(output, simonePreviewsOnly ? 'results-simone-previews.json' : 'results.json'), JSON.stringify(report, null, 2) + '\n');
   console.log(JSON.stringify({ passed: report.passed, failed: report.failed, output }, null, 2));
   if (report.failed) process.exitCode = 1;
 } finally {

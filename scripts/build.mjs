@@ -21,6 +21,11 @@ export function validateData(data) {
   const ids = data.services.map(service => service.id);
   if (new Set(ids).size !== ids.length || ids.some(id => !/^[a-z0-9-]+$/.test(id))) throw new Error('Service IDs must be unique and safe.');
   for (const item of data.experience) {
+    const descriptions = Array.isArray(item.description) ? item.description : [item.description];
+    if (!descriptions.length || descriptions.some(text => typeof text !== 'string' || !text.trim())) throw new Error(`Invalid experience description: ${item.id}`);
+    if (item.galleryImages !== undefined && (!Array.isArray(item.galleryImages) || !item.previewImage || item.galleryImages.some(media => !media || typeof media.src !== 'string' || !media.src.trim() || typeof media.alt !== 'string' || !media.alt.trim()))) throw new Error(`Invalid experience gallery: ${item.id}`);
+    const mediaPaths = [item.previewImage, ...(item.galleryImages || [])].filter(Boolean).map(media => media.src);
+    if (new Set(mediaPaths).size !== mediaPaths.length) throw new Error(`Duplicate experience gallery image: ${item.id}`);
     if (!/^\d{4}(?:-\d{2})?$/.test(item.startDate) || (!item.isCurrent && !/^\d{4}(?:-\d{2})?$/.test(item.endDate))) throw new Error(`Invalid experience date: ${item.id}`);
     if (item.projectSlug && !slugs.has(item.projectSlug)) throw new Error(`Unknown related project: ${item.projectSlug}`);
   }
